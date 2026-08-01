@@ -1,6 +1,5 @@
 import type { Element } from "../types";
 import { getConnectionPoints, getCurvedPath } from "./geometry";
-import { getShapeMeta } from "../shapeLibrary";
 
 export function exportToMermaid(elements: Element[]): string {
   let mermaid = "graph TD;\n";
@@ -62,7 +61,7 @@ export function exportToSVG(
 
   elements.forEach((el) => {
     if (el.type === "shape") {
-      const rx = el.shapeType === "rounded_rectangle" ? 8 : 0;
+      const rx = el.shapeType === "rectangle" ? 8 : 0;
       let shapeHtml = "";
       if (el.shapeType === "circle" || el.shapeType === "ellipse") {
         shapeHtml = `<ellipse cx="${el.x + el.width / 2}" cy="${el.y + el.height / 2}" rx="${el.width / 2}" ry="${el.height / 2}" fill="${el.fill}" stroke="${el.stroke}" stroke-width="${el.strokeWidth || 2}" />`;

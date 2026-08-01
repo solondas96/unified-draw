@@ -1,9 +1,10 @@
+import { Logger } from "../utils/logger";
 import {
-  useRef,
   useEffect,
+  useRef,
   useState,
-  useImperativeHandle,
   forwardRef,
+  useImperativeHandle,
 } from "react";
 import { Stage, Layer, Transformer, Rect as KonvaRect } from "react-konva";
 import Konva from "konva";
@@ -16,7 +17,8 @@ import {
   TextElementRenderer,
 } from "../ShapeRenderer";
 import { getShapeMeta } from "../shapeLibrary";
-import { getConnectionPoints, distance, Point } from "../utils/geometry";
+import { getConnectionPoints } from "../utils/geometry";
+import type { Point } from "../utils/geometry";
 
 export interface CanvasWorkspaceRef {
   getStage: () => Konva.Stage | null;
@@ -112,9 +114,10 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
   const freehandKonvaLineRef = useRef<Konva.Line | null>(null);
 
   // ── Connector drawing ─────────────────────────────────────────────
-  const [connectorSource, setConnectorSource] = useState<string | null>(null);
-  const [hoveredConnectionPoint, setHoveredConnectionPoint] = useState<{
+  // const [connectorSource, setConnectorSource] = useState<string | null>(null);
+  const [hoveredConnectionPoint] = useState<{
     elementId: string;
+    pointIndex: number;
     point: Point;
   } | null>(null);
   const [connectorSourcePoint, setConnectorSourcePoint] = useState<{
@@ -124,11 +127,6 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
   const [connectorLiveEnd, setConnectorLiveEnd] = useState<{
     x: number;
     y: number;
-  } | null>(null);
-  const [contextMenuState, setContextMenuState] = useState<{
-    x: number;
-    y: number;
-    visible: boolean;
   } | null>(null);
 
   // ── Inline text editing ────────────────────────────────────────────
@@ -241,7 +239,6 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
       } else if (e.key === "Escape") {
         clearSelection();
         setTool("select");
-        setConnectorSource(null);
         setConnectorSourcePoint(null);
         setConnectorLiveEnd(null);
         setIsCreating(false);
@@ -668,7 +665,7 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
             selectElement(newEl.id);
           }
         } catch (err) {
-          Logger.error(err);
+          Logger.error(err instanceof Error ? err.message : String(err));
         }
       }}
       style={{ background: "var(--canvas-bg)", cursor: getCursor() }}
@@ -692,11 +689,6 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
         ref={stageRef}
         onContextMenu={(e) => {
           e.evt.preventDefault();
-          setContextMenuState({
-            x: e.evt.clientX,
-            y: e.evt.clientY,
-            visible: true,
-          });
         }}
         width={dimensions.width}
         height={dimensions.height}
