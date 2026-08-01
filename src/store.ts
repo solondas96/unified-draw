@@ -448,7 +448,7 @@ export const useStore = create<StoreState>((set, get) => ({
         : [...state.favoriteShapes, label];
       try {
         localStorage.setItem("favoriteShapes", JSON.stringify(newFavs));
-      } catch (e) {}
+      } catch {}
       return { favoriteShapes: newFavs };
     });
   },

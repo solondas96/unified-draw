@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useCallback,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -170,6 +171,14 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
     trRef.current.getLayer()?.batchDraw();
   }, [selectedIds, elements]);
 
+  // ── Inline text editing ────────────────────────────────────────────
+  const finishEditing = useCallback(() => {
+    if (editingId) {
+      updateElement(editingId, { text: editingText });
+      setEditingId(null);
+    }
+  }, [editingId, editingText, updateElement]);
+
   // ── Keyboard shortcuts ────────────────────────────────────────────
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -210,7 +219,11 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
         setHelpPanelOpen(true);
       } else if (ctrl && e.key.toLowerCase() === "z") {
         e.preventDefault();
-        e.shiftKey ? redo() : undo();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
       } else if (ctrl && e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
@@ -283,6 +296,13 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
     clearSelection,
     setTool,
     editingId,
+    sendToBack,
+    toggleLockSelected,
+    setHelpPanelOpen,
+    selectedIds,
+    finishEditing,
+    showToast,
+    bringToFront,
   ]);
 
   // ── Utility: get pointer position in world/canvas space ───────────
@@ -601,14 +621,6 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
       height: Math.max(10, Math.round(el.height * Math.abs(scaleY))),
       rotation: node.rotation(),
     });
-  };
-
-  // ── Inline text editing ────────────────────────────────────────────
-  const finishEditing = () => {
-    if (editingId) {
-      updateElement(editingId, { text: editingText });
-      setEditingId(null);
-    }
   };
 
   const editingEl = elements.find((el) => el.id === editingId);
