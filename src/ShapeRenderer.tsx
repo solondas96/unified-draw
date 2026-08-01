@@ -16,12 +16,15 @@ import type Konva from "konva";
 import type { Element, ShapeType } from "./types";
 import { getShapeMeta } from "./shapeLibrary";
 import {
-  drawRoughRectangle,
-  drawRoughEllipse,
-  drawRoughPolygon,
-  drawRoughPath,
+  drawDrawable,
+  getRoughRectangleDrawable,
+  getRoughEllipseDrawable,
+  getRoughPolygonDrawable,
+  getRoughPathDrawable,
   getFreehandSvgPath,
+  getCachedDrawable
 } from "./utils/roughHelper";
+import { useStore } from "./store";
 
 // ─── Helper: Get points for polygon shapes ─────────────────────────
 function diamondPoints(w: number, h: number): number[] {
@@ -636,9 +639,13 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     y,
   } = element;
 
+  const theme = useStore((s) => s.theme);
+  const isDark = theme === "dark";
+  const displayStroke = isDark && (stroke === "#1e293b" || !stroke) ? "#ced4da" : (stroke || "#1e293b");
+
   const commonProps = {
     fill: fill || "transparent",
-    stroke: stroke || "#1e293b",
+    stroke: displayStroke,
     strokeWidth: strokeWidth || 2,
     opacity: opacity ?? 1,
     dash,
@@ -656,7 +663,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         return (
           <KonvaShape
             sceneFunc={(ctx) => {
-              drawRoughPath(ctx, pathString, width, height, element.roughness!, fill);
+              const d = getCachedDrawable(element, () => getRoughPathDrawable(pathString, width, height, element.roughness!, fill));
+              if (d) drawDrawable(ctx, d);
             }}
             {...commonProps}
           />
@@ -676,7 +684,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           return (
             <KonvaShape
               sceneFunc={(ctx) => {
-                drawRoughRectangle(ctx, width, height, element.roughness!, fill);
+                const d = getCachedDrawable(element, () => getRoughRectangleDrawable(width, height, element.roughness!, fill));
+                if (d) drawDrawable(ctx, d);
               }}
               {...commonProps}
             />
@@ -699,7 +708,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           return (
             <KonvaShape
               sceneFunc={(ctx) => {
-                drawRoughEllipse(ctx, r * 2, r * 2, element.roughness!, fill);
+                const d = getCachedDrawable(element, () => getRoughEllipseDrawable(r * 2, r * 2, element.roughness!, fill));
+                if (d) drawDrawable(ctx, d);
               }}
               {...commonProps}
             />
@@ -720,7 +730,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           return (
             <KonvaShape
               sceneFunc={(ctx) => {
-                drawRoughEllipse(ctx, width, height, element.roughness!, fill);
+                const d = getCachedDrawable(element, () => getRoughEllipseDrawable(width, height, element.roughness!, fill));
+                if (d) drawDrawable(ctx, d);
               }}
               {...commonProps}
             />
@@ -742,7 +753,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           return (
             <KonvaShape
               sceneFunc={(ctx) => {
-                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
+                const d = getCachedDrawable(element, () => getRoughPolygonDrawable([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill));
+                if (d) drawDrawable(ctx, d);
               }}
               {...commonProps}
             />
@@ -763,7 +775,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           return (
             <KonvaShape
               sceneFunc={(ctx) => {
-                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]]], element.roughness!, true, fill);
+                const d = getCachedDrawable(element, () => getRoughPolygonDrawable([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]]], element.roughness!, true, fill));
+                if (d) drawDrawable(ctx, d);
               }}
               {...commonProps}
             />
@@ -829,7 +842,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           return (
             <KonvaShape
               sceneFunc={(ctx) => {
-                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
+                const d = getCachedDrawable(element, () => getRoughPolygonDrawable([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill));
+                if (d) drawDrawable(ctx, d);
               }}
               {...commonProps}
             />
@@ -850,7 +864,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           return (
             <KonvaShape
               sceneFunc={(ctx) => {
-                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
+                const d = getCachedDrawable(element, () => getRoughPolygonDrawable([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill));
+                if (d) drawDrawable(ctx, d);
               }}
               {...commonProps}
             />
@@ -1029,6 +1044,8 @@ export const FreehandRenderer: React.FC<FreehandRendererProps> = ({
   onRef,
   onClick,
 }) => {
+  const theme = useStore((s) => s.theme);
+  const displayStroke = theme === "dark" && (element.stroke === "#1e293b" || !element.stroke) ? "#ced4da" : (element.stroke || "#1e293b");
   if (!element.points || element.points.length < 2) return null;
   
   if (element.roughness && element.roughness > 0) {
@@ -1052,7 +1069,7 @@ export const FreehandRenderer: React.FC<FreehandRendererProps> = ({
       x={0}
       y={0}
       points={flatPoints}
-      stroke={element.stroke || "#1e293b"}
+      stroke={displayStroke}
       strokeWidth={element.strokeWidth || 2}
       lineCap="round"
       lineJoin="round"
@@ -1079,15 +1096,18 @@ export const ConnectorRenderer: React.FC<ConnectorRendererProps> = ({
   onRef,
   onClick,
 }) => {
+  const theme = useStore((s) => s.theme);
+  const displayStroke = theme === "dark" && (element.stroke === "#1e293b" || !element.stroke) ? "#ced4da" : (element.stroke || "#1e293b");
   if (!element.points || element.points.length < 2) return null;
 
   if (element.roughness && element.roughness > 0) {
     return (
       <KonvaShape
         sceneFunc={(ctx) => {
-          drawRoughPolygon(ctx, element.points!, element.roughness!, false);
+          const d = getCachedDrawable(element, () => getRoughPolygonDrawable(element.points!, element.roughness!, false, undefined));
+          if (d) drawDrawable(ctx, d);
         }}
-        stroke={element.stroke || "#1e293b"}
+        stroke={displayStroke}
         strokeWidth={element.strokeWidth || 2}
         opacity={element.opacity ?? 1}
         dash={element.dash}
@@ -1106,7 +1126,7 @@ export const ConnectorRenderer: React.FC<ConnectorRendererProps> = ({
       x={0}
       y={0}
       points={flatPoints}
-      stroke={element.stroke || "#1e293b"}
+      stroke={displayStroke}
       strokeWidth={element.strokeWidth || 2}
       fill={element.stroke || "#1e293b"}
       pointerLength={10}

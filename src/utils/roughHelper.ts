@@ -5,6 +5,16 @@ import type Konva from "konva";
 
 // Initialize a singleton generator
 const generator = rough.generator();
+const roughCache = new WeakMap<any, Drawable | null>();
+
+export function getCachedDrawable(element: any, generatorFn: () => Drawable | null): Drawable | null {
+  if (roughCache.has(element)) {
+    return roughCache.get(element)!;
+  }
+  const d = generatorFn();
+  roughCache.set(element, d);
+  return d;
+}
 
 /**
  * Draws a Rough.js Drawable directly onto a Konva Context.
@@ -29,10 +39,7 @@ export function drawDrawable(ctx: Konva.Context, drawable: Drawable) {
     }
 
     if (set.type === "fillPath" || set.type === "fillSketch") {
-      ctx.fillStrokeShape(drawable as any); // Konva uses fillStrokeShape
-      // wait, we shouldn't use fillStrokeShape, we just need to use native-like fill/stroke
-      // if it's a fill sketch (the zig-zags), roughjs draws them as strokes!
-      // roughjs generates fillSketch as lines, so we must stroke them.
+      ctx.fillStrokeShape(drawable as any);
       if (set.type === "fillPath") {
         ctx.fill();
       } else {
@@ -45,71 +52,65 @@ export function drawDrawable(ctx: Konva.Context, drawable: Drawable) {
 }
 
 /**
- * Returns a drawn Rough.js Rectangle.
+ * Returns a Rough.js Rectangle Drawable.
  */
-export function drawRoughRectangle(ctx: Konva.Context, w: number, h: number, roughness: number, fill?: string) {
-  const options: any = { roughness };
-  if (fill && fill !== "transparent") {
-    options.fill = fill;
-    options.fillStyle = "hachure"; // typical excalidraw sketchy fill
-  }
-  const d = generator.rectangle(0, 0, w, h, options);
-  drawDrawable(ctx, d);
-}
-
-/**
- * Returns a drawn Rough.js Ellipse.
- */
-export function drawRoughEllipse(ctx: Konva.Context, w: number, h: number, roughness: number, fill?: string) {
+export function getRoughRectangleDrawable(w: number, h: number, roughness: number, fill?: string): Drawable {
   const options: any = { roughness };
   if (fill && fill !== "transparent") {
     options.fill = fill;
     options.fillStyle = "hachure";
   }
-  const d = generator.ellipse(w / 2, h / 2, w, h, options);
-  drawDrawable(ctx, d);
+  return generator.rectangle(0, 0, w, h, options);
 }
 
 /**
- * Returns a drawn Rough.js Polygon.
+ * Returns a Rough.js Ellipse Drawable.
  */
-export function drawRoughPolygon(ctx: Konva.Context, points: [number, number][], roughness: number, closed = false, fill?: string) {
-  if (points.length < 2) return;
+export function getRoughEllipseDrawable(w: number, h: number, roughness: number, fill?: string): Drawable {
+  const options: any = { roughness };
+  if (fill && fill !== "transparent") {
+    options.fill = fill;
+    options.fillStyle = "hachure";
+  }
+  return generator.ellipse(w / 2, h / 2, w, h, options);
+}
+
+/**
+ * Returns a Rough.js Polygon Drawable.
+ */
+export function getRoughPolygonDrawable(points: [number, number][], roughness: number, closed = false, fill?: string): Drawable | null {
+  if (points.length < 2) return null;
   const options: any = { roughness };
   if (fill && fill !== "transparent" && closed) {
     options.fill = fill;
     options.fillStyle = "hachure";
   }
-  const d = closed
+  return closed
     ? generator.polygon(points, options)
     : generator.linearPath(points, options);
-  drawDrawable(ctx, d);
 }
 
 /**
- * Returns a drawn Rough.js Line.
+ * Returns a Rough.js Line Drawable.
  */
-export function drawRoughLine(ctx: Konva.Context, x1: number, y1: number, x2: number, y2: number, roughness: number) {
-  const d = generator.line(x1, y1, x2, y2, { roughness });
-  drawDrawable(ctx, d);
+export function getRoughLineDrawable(x1: number, y1: number, x2: number, y2: number, roughness: number): Drawable {
+  return generator.line(x1, y1, x2, y2, { roughness });
 }
 
 /**
- * Returns a drawn Rough.js Path.
+ * Returns a Rough.js Path Drawable.
  */
-export function drawRoughPath(ctx: Konva.Context, svgPath: string, _w: number, _h: number, roughness: number, fill?: string) {
+export function getRoughPathDrawable(svgPath: string, _w: number, _h: number, roughness: number, fill?: string): Drawable {
   const options: any = { roughness };
   if (fill && fill !== "transparent") {
     options.fill = fill;
     options.fillStyle = "hachure";
   }
-  const d = generator.path(svgPath, options);
-  drawDrawable(ctx, d);
+  return generator.path(svgPath, options);
 }
 
 /**
  * Generates an SVG path string for a smooth variable-width freehand stroke
-
  * using perfect-freehand.
  */
 export function getFreehandSvgPath(
