@@ -128,6 +128,12 @@ body {
 .ud-text-2      { color: var(--text-secondary); }
 .ud-text-muted  { color: var(--text-muted); }
 
+/* ─── Excalidraw Dotted Background ───────────────────────────────── */
+.bg-dots {
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
 /* ─── Theme transition ───────────────────────────────────────────── */
 .ud-surface,
 .ud-surface-r,

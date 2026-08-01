@@ -63,7 +63,7 @@ export function App() {
 
   return (
     <div
-      className="w-screen h-screen flex flex-col overflow-hidden font-sans"
+      className="w-screen h-screen flex flex-col overflow-hidden font-sans bg-dots"
       style={{
         background: "var(--canvas-bg)",
         color: "var(--text-primary)",

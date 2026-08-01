@@ -15,6 +15,14 @@ import {
 import type Konva from "konva";
 import type { Element, ShapeType } from "./types";
 import { getShapeMeta } from "./shapeLibrary";
+import {
+  getRoughRectangle,
+  getRoughEllipse,
+  getRoughPolygon,
+  getRoughPath,
+  getFreehandSvgPath,
+  getRoughLine,
+} from "./utils/roughHelper";
 
 // ─── Helper: Get points for polygon shapes ─────────────────────────
 function diamondPoints(w: number, h: number): number[] {
@@ -644,9 +652,13 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     // Path-based shapes
     const pathFn = PATH_SHAPES[shapeType];
     if (pathFn) {
+      const pathString = pathFn(width, height);
+      if (element.roughness && element.roughness > 0) {
+        return <Path data={getRoughPath(pathString, width, height, element.roughness)} {...commonProps} />;
+      }
       return (
         <Path
-          data={pathFn(width, height)}
+          data={pathString}
           {...commonProps}
         />
       );
@@ -654,6 +666,9 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
 
     switch (shapeType) {
       case "rectangle":
+        if (element.roughness && element.roughness > 0) {
+          return <Path data={getRoughRectangle(width, height, element.roughness)} {...commonProps} />;
+        }
         return (
           <Rect
             x={0}
@@ -667,6 +682,9 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
 
       case "circle": {
         const r = Math.min(width, height) / 2;
+        if (element.roughness && element.roughness > 0) {
+          return <Path data={getRoughEllipse(r * 2, r * 2, element.roughness)} {...commonProps} />;
+        }
         return (
           <Circle
             x={width / 2}
@@ -678,6 +696,9 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
       }
 
       case "ellipse":
+        if (element.roughness && element.roughness > 0) {
+          return <Path data={getRoughEllipse(width, height, element.roughness)} {...commonProps} />;
+        }
         return (
           <Ellipse
             x={width / 2}
@@ -688,23 +709,33 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           />
         );
 
-      case "diamond":
+      case "diamond": {
+        const pts = diamondPoints(width, height);
+        if (element.roughness && element.roughness > 0) {
+          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness, true)} {...commonProps} />;
+        }
         return (
           <Line
-            points={diamondPoints(width, height)}
+            points={pts}
             closed
             {...commonProps}
           />
         );
+      }
 
-      case "triangle":
+      case "triangle": {
+        const pts = trianglePoints(width, height);
+        if (element.roughness && element.roughness > 0) {
+          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]]], element.roughness, true)} {...commonProps} />;
+        }
         return (
           <Line
-            points={trianglePoints(width, height)}
+            points={pts}
             closed
             {...commonProps}
           />
         );
+      }
 
       case "pentagon":
         return (
@@ -751,23 +782,33 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
           />
         );
 
-      case "parallelogram":
+      case "parallelogram": {
+        const pts = parallelogramPoints(width, height);
+        if (element.roughness && element.roughness > 0) {
+          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness, true)} {...commonProps} />;
+        }
         return (
           <Line
-            points={parallelogramPoints(width, height)}
+            points={pts}
             closed
             {...commonProps}
           />
         );
+      }
 
-      case "trapezoid":
+      case "trapezoid": {
+        const pts = trapezoidPoints(width, height);
+        if (element.roughness && element.roughness > 0) {
+          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness, true)} {...commonProps} />;
+        }
         return (
           <Line
-            points={trapezoidPoints(width, height)}
+            points={pts}
             closed
             {...commonProps}
           />
         );
+      }
 
       case "cylinder":
       case "database":
@@ -934,6 +975,21 @@ export const FreehandRenderer: React.FC<FreehandRendererProps> = ({
   onClick,
 }) => {
   if (!element.points || element.points.length < 2) return null;
+  
+  if (element.roughness && element.roughness > 0) {
+    return (
+      <Path
+        data={getFreehandSvgPath(element.points, element.strokeWidth || 4)}
+        fill={element.stroke || "#1e293b"}
+        opacity={element.opacity ?? 1}
+        id={element.id}
+        ref={(node: Konva.Node | null) => onRef?.(node)}
+        onClick={onClick}
+        hitStrokeWidth={12}
+      />
+    );
+  }
+
   // Flatten [[x1,y1],[x2,y2]] -> [x1,y1,x2,y2] (absolute world coords)
   const flatPoints = element.points.flatMap((p) => p);
   return (
@@ -969,6 +1025,24 @@ export const ConnectorRenderer: React.FC<ConnectorRendererProps> = ({
   onClick,
 }) => {
   if (!element.points || element.points.length < 2) return null;
+
+  if (element.roughness && element.roughness > 0) {
+    const roughPath = getRoughPolygon(element.points, element.roughness, false);
+    return (
+      <Path
+        data={roughPath}
+        stroke={element.stroke || "#1e293b"}
+        strokeWidth={element.strokeWidth || 2}
+        opacity={element.opacity ?? 1}
+        dash={element.dash}
+        id={element.id}
+        ref={(node: Konva.Node | null) => onRef?.(node)}
+        onClick={onClick}
+        hitStrokeWidth={12}
+      />
+    );
+  }
+
   // Flatten absolute coords [[x1,y1],[x2,y2]] -> [x1,y1,x2,y2]
   const flatPoints = element.points.flatMap((p) => p);
   return (

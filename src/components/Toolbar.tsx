@@ -102,17 +102,19 @@ export const Toolbar: React.FC<{
 
   return (
     <header
-      className="h-14 px-4 flex items-center justify-between select-none z-30 relative"
-      style={{
-        background: "var(--surface-base)",
-        borderBottom: "1.5px solid var(--border-subtle)",
-        boxShadow: isDark
-          ? "0 1px 12px rgba(0,0,0,0.4)"
-          : "0 1px 8px rgba(0,0,0,0.08)",
-      }}
+      className="absolute top-4 left-0 w-full px-4 flex items-start justify-between select-none z-30 pointer-events-none"
     >
       {/* ── Left: Logo & Title ─────────────────────────────────────── */}
-      <div className="flex items-center gap-3">
+      <div 
+        className="flex items-center gap-3 p-2 rounded-xl pointer-events-auto transition-all"
+        style={{
+          background: "var(--surface-base)",
+          border: "1.5px solid var(--border-subtle)",
+          boxShadow: isDark
+            ? "0 4px 12px rgba(0,0,0,0.4)"
+            : "0 4px 12px rgba(0,0,0,0.08)",
+        }}
+      >
         {/* Logo mark */}
         <div className="flex items-center gap-2">
           <div
@@ -239,10 +241,13 @@ export const Toolbar: React.FC<{
 
       {/* ── Center: Drawing Tools ──────────────────────────────────── */}
       <div
-        className="flex items-center p-1 rounded-xl gap-0.5"
+        className="flex items-center p-1 rounded-xl gap-0.5 pointer-events-auto transition-all"
         style={{
-          background: "var(--surface-raised)",
+          background: "var(--surface-base)",
           border: "1.5px solid var(--border-subtle)",
+          boxShadow: isDark
+            ? "0 4px 12px rgba(0,0,0,0.4)"
+            : "0 4px 12px rgba(0,0,0,0.08)",
         }}
       >
         {tools.map((t) => {
@@ -284,7 +289,16 @@ export const Toolbar: React.FC<{
       </div>
 
       {/* ── Right: Controls + Theme Toggle ────────────────────────── */}
-      <div className="flex items-center gap-2">
+      <div 
+        className="flex items-center gap-2 pointer-events-auto p-1.5 rounded-xl transition-all"
+        style={{
+          background: "var(--surface-base)",
+          border: "1.5px solid var(--border-subtle)",
+          boxShadow: isDark
+            ? "0 4px 12px rgba(0,0,0,0.4)"
+            : "0 4px 12px rgba(0,0,0,0.08)",
+        }}
+      >
         {/* Undo / Redo */}
         <ToolGroup>
           <ToolBtn onClick={undo} disabled={!canUndo()} title="Undo (Ctrl+Z)">
