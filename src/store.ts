@@ -80,6 +80,9 @@ interface StoreState {
   updateElements: (ids: string[], patch: Partial<Element>) => void;
   deleteElements: (ids: string[]) => void;
   deleteSelected: () => void;
+  toggleLockSelected: () => void;
+  showToast: (message: string) => void;
+  setHelpPanelOpen: (isOpen: boolean) => void;
   nudgeSelected: (dx: number, dy: number) => void;
   alignSelected: (alignment: 'left'|'center'|'right'|'top'|'middle'|'bottom'|'distribute-h'|'distribute-v') => void;
   duplicateElement: (id: string) => void;
@@ -219,6 +222,8 @@ export const useStore = create<StoreState>((set, get) => ({
   clipboard: [],
 
   sidebarTab: "library",
+  toastMessage: null,
+  isHelpPanelOpen: false,
   showGrid: true,
   snapToGrid: false,
   gridSize: 20,
@@ -360,6 +365,30 @@ export const useStore = create<StoreState>((set, get) => ({
       });
     }
 
+    set({
+      history: pushHistory(state.history, newElements),
+      elements: newElements,
+      updatedAt: Date.now()
+    });
+  },
+
+  setHelpPanelOpen: (isOpen) => set({ isHelpPanelOpen: isOpen }),
+  showToast: (message) => {
+    set({ toastMessage: message });
+    setTimeout(() => {
+      if (get().toastMessage === message) set({ toastMessage: null });
+    }, 3000);
+  },
+  toggleLockSelected: () => {
+    const state = get();
+    if (state.selectedIds.length === 0) return;
+    const idSet = new Set(state.selectedIds);
+    // Find if at least one is unlocked to determine whether we are locking or unlocking everything
+    const anyUnlocked = state.history.present.some(e => idSet.has(e.id) && !e.locked);
+    
+    const newElements = state.history.present.map(e => 
+      idSet.has(e.id) ? { ...e, locked: anyUnlocked } : e
+    );
     set({
       history: pushHistory(state.history, newElements),
       elements: newElements,

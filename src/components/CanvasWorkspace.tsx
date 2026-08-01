@@ -16,6 +16,7 @@ import {
   TextElementRenderer,
 } from "../ShapeRenderer";
 import { getShapeMeta } from "../shapeLibrary";
+import { ContextMenu } from "./ContextMenu";
 import { getConnectionPoints, distance, Point } from "../utils/geometry";
 
 export interface CanvasWorkspaceRef {
@@ -45,6 +46,11 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
       selectElements,
       clearSelection,
       selectAll,
+      showToast,
+      setHelpPanelOpen,
+      toggleLockSelected,
+      bringToFront,
+      sendToBack,
       tool,
       setTool,
       addElement,
@@ -112,6 +118,7 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
     const [hoveredConnectionPoint, setHoveredConnectionPoint] = useState<{ elementId: string, point: Point } | null>(null);
     const [connectorSourcePoint, setConnectorSourcePoint] = useState<{ elementId: string, point: Point } | null>(null);
     const [connectorLiveEnd, setConnectorLiveEnd] = useState<{ x: number, y: number } | null>(null);
+    const [contextMenuState, setContextMenuState] = useState<{ x: number, y: number, visible: boolean } | null>(null);
 
     // ── Inline text editing ────────────────────────────────────────────
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -164,7 +171,30 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
 
         const ctrl = e.metaKey || e.ctrlKey;
 
-        if (ctrl && e.key.toLowerCase() === "z") {
+        
+        if (ctrl && e.key.toLowerCase() === "s") {
+          e.preventDefault();
+          showToast("Saved!");
+          // Save is handled by debouncedSave, this is just visual feedback
+        } else if (ctrl && e.key.toLowerCase() === "l") {
+          e.preventDefault();
+          toggleLockSelected();
+        } else if (ctrl && e.shiftKey && e.key === "ArrowUp") {
+          e.preventDefault();
+          selectedIds.forEach(bringToFront);
+        } else if (ctrl && e.shiftKey && e.key === "ArrowDown") {
+          e.preventDefault();
+          selectedIds.forEach(sendToBack);
+        } else if (e.key === "/") {
+          e.preventDefault();
+          setTool("select");
+          // Focus search is handled implicitly by opening the library tab in standard flows, 
+          // but we can trigger a DOM focus if we add an ID to the search input.
+          document.getElementById('library-search-input')?.focus();
+        } else if (e.key.toLowerCase() === "h" && !ctrl) {
+          e.preventDefault();
+          setHelpPanelOpen(true);
+        } else if (ctrl && e.key.toLowerCase() === "z") {
           e.preventDefault();
           e.shiftKey ? redo() : undo();
         } else if (ctrl && e.key.toLowerCase() === "y") {
@@ -621,6 +651,10 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
         {/* ── Konva Stage ─────────────────────────────────────────── */}
         <Stage
           ref={stageRef}
+          onContextMenu={(e) => {
+            e.evt.preventDefault();
+            setContextMenuState({ x: e.evt.clientX, y: e.evt.clientY, visible: true });
+          }}
           width={dimensions.width}
           height={dimensions.height}
           x={panX}

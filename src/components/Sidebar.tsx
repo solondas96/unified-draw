@@ -245,6 +245,7 @@ export const Sidebar: React.FC = () => {
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
               <input
+                id="library-search-input"
                 type="text"
                 placeholder="Search 100+ shapes..."
                 value={searchQuery}

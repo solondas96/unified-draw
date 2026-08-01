@@ -6,6 +6,7 @@ import { CanvasWorkspace, type CanvasWorkspaceRef } from "./components/CanvasWor
 import { Sidebar } from "./components/Sidebar";
 import { StatusBar } from "./components/StatusBar";
 import { SavedCanvasesModal } from "./components/SavedCanvasesModal";
+import { HelpPanel } from "./components/HelpPanel";
 
 /**
  * Main application entry point for UnifiedDraw.
@@ -23,6 +24,7 @@ export function App() {
     panX,
     panY,
     theme,
+    toastMessage,
   } = useStore();
 
   const workspaceRef = useRef<CanvasWorkspaceRef | null>(null);
@@ -91,6 +93,16 @@ export function App() {
         isOpen={isSavedModalOpen}
         onClose={() => setIsSavedModalOpen(false)}
       />
+
+      {/* Help Panel */}
+      <HelpPanel />
+
+      {/* Global Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full shadow-lg border border-slate-700 z-[300] animate-bounce-short">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }
