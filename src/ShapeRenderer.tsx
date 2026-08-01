@@ -598,6 +598,13 @@ export interface ShapeRendererProps {
   draggable?: boolean;
 }
 
+/**
+ * Renders an individual UnifiedDraw Element onto the Konva Canvas.
+ * Handles parsing of shape bounds, custom SVG path generation,
+ * text rendering, and bounding-box highlighting for selected states.
+ * 
+ * @param props Contains the element data and interaction callbacks.
+ */
 export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
   element,
   onRef,

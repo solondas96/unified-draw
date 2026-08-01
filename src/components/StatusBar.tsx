@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { useStore } from "../store";
 import { CheckCircle2, RefreshCw, Keyboard, X } from "lucide-react";
 
+/**
+ * The bottom status bar component.
+ * Displays current zoom level, element count, auto-save status,
+ * and provides access to the keyboard shortcuts modal.
+ */
 export const StatusBar: React.FC = () => {
   const { elements, selectedIds, zoom, saveStatus } = useStore();
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);

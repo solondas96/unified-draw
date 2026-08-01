@@ -30,8 +30,13 @@ const SHAPE_DRAW_TOOLS = new Set([
   "arrow",
 ]);
 
+/**
+ * The core drawing workspace powered by Konva.js.
+ * Handles infinite canvas panning, zooming, mouse interactions (drawing, selecting),
+ * keyboard shortcuts, and rendering all elements via ShapeRenderer.
+ */
 export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
-  (_props, ref) => {
+  (_, ref) => {
     const {
       elements,
       selectedIds,

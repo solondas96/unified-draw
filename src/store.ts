@@ -34,7 +34,9 @@ function redoHistory(state: HistoryState): HistoryState {
   return { past: [...state.past, state.present], present: next, future };
 }
 
-// ─── Store Interface ───────────────────────────────────────────────
+/**
+ * Core application state for UnifiedDraw, managed by Zustand.
+ */
 interface StoreState {
   // Canvas metadata
   canvasId: string;
@@ -127,6 +129,10 @@ function snap(v: number, size: number, enabled: boolean): number {
   return enabled ? Math.round(v / size) * size : v;
 }
 
+/**
+ * Generates a default text style configuration.
+ * Uses the hand-drawn Virgil font by default.
+ */
 export function createDefaultTextStyle(): TextStyle {
   return {
     fontSize: 16,
@@ -147,6 +153,18 @@ function getThemeShapeStroke(): string {
   );
 }
 
+/**
+ * Factory function to create a new canvas Element.
+ * Reads the current CSS theme variables to pick an appropriate stroke color.
+ * 
+ * @param type The base element type (e.g. "shape", "text").
+ * @param shapeType The specific shape type (if applicable).
+ * @param x Initial X position.
+ * @param y Initial Y position.
+ * @param width Initial width.
+ * @param height Initial height.
+ * @returns A fully formed Element object.
+ */
 export function createDefaultElement(
   type: Element["type"],
   shapeType: ShapeType | undefined,
@@ -176,6 +194,10 @@ export function createDefaultElement(
   };
 }
 
+/**
+ * The global Zustand store.
+ * Handles elements, view state, selection, history, and theme.
+ */
 export const useStore = create<StoreState>((set, get) => ({
   canvasId: genId(),
   canvasName: "Untitled Diagram",

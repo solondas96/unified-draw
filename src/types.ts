@@ -1,5 +1,8 @@
 // Core data models for UnifiedDraw
 
+/**
+ * Defines the currently active tool on the canvas.
+ */
 export type ToolType =
   | "select"
   | "freehand"
@@ -13,8 +16,14 @@ export type ToolType =
   | "connector"
   | "pan";
 
+/**
+ * Broad categories of elements that can be drawn on the canvas.
+ */
 export type ElementType = "shape" | "text" | "connector" | "freehand";
 
+/**
+ * Specific shape identifiers used to render predefined SVG paths or primitives.
+ */
 export type ShapeType =
   | "rectangle"
   | "circle"
@@ -122,6 +131,9 @@ export type ShapeType =
   | "gcp"
   | "azure";
 
+/**
+ * Styling properties specific to Text elements.
+ */
 export interface TextStyle {
   fontSize: number;
   fontWeight: string; // "normal" | "bold"
@@ -131,6 +143,9 @@ export interface TextStyle {
   fontFamily: string;
 }
 
+/**
+ * Represents a single node or object on the canvas (Shape, Text, Line, etc.).
+ */
 export interface Element {
   id: string;
   type: ElementType;
@@ -157,6 +172,9 @@ export interface Element {
   dash?: number[]; // dash pattern
 }
 
+/**
+ * Represents the complete state of a document (diagram) stored in the database.
+ */
 export interface Canvas {
   id: string;
   name: string;
@@ -169,6 +187,9 @@ export interface Canvas {
   panY: number;
 }
 
+/**
+ * Metadata defining a shape in the sidebar library.
+ */
 export interface ShapeLibraryItem {
   type: ShapeType;
   label: string;
@@ -179,6 +200,9 @@ export interface ShapeLibraryItem {
   defaultStroke: string;
 }
 
+/**
+ * A standard 2D bounding box definition.
+ */
 export interface BoundingBox {
   x: number;
   y: number;
@@ -186,4 +210,7 @@ export interface BoundingBox {
   height: number;
 }
 
+/**
+ * Supported formats for exporting the canvas view.
+ */
 export type ExportFormat = "svg" | "png" | "json";

@@ -126,6 +126,11 @@ const SidebarShapeThumbnail: React.FC<{ shapeType: ShapeType }> = ({ shapeType }
   );
 };
 
+/**
+ * The right-hand panel containing the Library, Inspector, and Layers tabs.
+ * Allows users to drag in shapes, edit selected element properties, 
+ * and manage Z-index layering.
+ */
 export const Sidebar: React.FC = () => {
   const {
     sidebarTab,

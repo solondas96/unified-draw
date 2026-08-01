@@ -7,6 +7,11 @@ import { Sidebar } from "./components/Sidebar";
 import { StatusBar } from "./components/StatusBar";
 import { SavedCanvasesModal } from "./components/SavedCanvasesModal";
 
+/**
+ * Main application entry point for UnifiedDraw.
+ * Manages global layout, handles initialization from IndexedDB,
+ * sets up the debounced auto-save effect, and orchestrates the core components.
+ */
 export function App() {
   const {
     getCanvasData,
@@ -38,7 +43,8 @@ export function App() {
           loadCanvas(latest);
         }
       } catch (e) {
-        console.error("Failed to load initial canvas from IndexedDB", e);
+        console.error("Failed to load initial canvas from IndexedDB. Starting with empty canvas.", e);
+        alert("Could not load your saved diagrams. You may be in Private Browsing mode or local storage is disabled.");
       } finally {
         setIsInitialized(true);
       }

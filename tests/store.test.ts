@@ -31,14 +31,14 @@ describe('Zustand Store Tests', () => {
   });
 
   it('should add an element', () => {
-    const el = createDefaultElement('shape', 'Rectangle', 0, 0);
+    const el = createDefaultElement('shape', 'rectangle', 0, 0);
     useStore.getState().addElement(el);
     expect(useStore.getState().elements).toHaveLength(1);
     expect(useStore.getState().elements[0].id).toBe(el.id);
   });
 
   it('should update an element', () => {
-    const el = createDefaultElement('shape', 'Rectangle', 0, 0);
+    const el = createDefaultElement('shape', 'rectangle', 0, 0);
     useStore.getState().addElement(el);
     useStore.getState().updateElement(el.id, { x: 100, y: 100 });
     const updated = useStore.getState().elements[0];
@@ -47,8 +47,8 @@ describe('Zustand Store Tests', () => {
   });
 
   it('should handle selection', () => {
-    const el1 = createDefaultElement('shape', 'Rectangle', 0, 0);
-    const el2 = createDefaultElement('shape', 'Circle', 50, 50);
+    const el1 = createDefaultElement('shape', 'rectangle', 0, 0);
+    const el2 = createDefaultElement('shape', 'circle', 50, 50);
     useStore.getState().addElements([el1, el2]);
     
     useStore.getState().selectElement(el1.id);
@@ -64,7 +64,7 @@ describe('Zustand Store Tests', () => {
   });
 
   it('should handle undo and redo', () => {
-    const el = createDefaultElement('shape', 'Rectangle', 0, 0);
+    const el = createDefaultElement('shape', 'rectangle', 0, 0);
     
     // Action 1: Add element
     useStore.getState().addElement(el);

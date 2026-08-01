@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { useStore } from "../store";
 import type { ToolType } from "../types";
 import { exportToJSON, exportToPNG, exportToSVG, importFromJSON } from "../utils/exportImport";
-import Konva from "konva";
+
 import {
   MousePointer,
   Hand,
@@ -34,12 +34,17 @@ import {
   Moon,
 } from "lucide-react";
 
-interface ToolbarProps {
-  getStageRef: () => Konva.Stage | null;
+/**
+ * The top navigation and tool selection bar.
+ * Handles tool switching, canvas title editing, theme toggling,
+ * and triggering canvas load/export modals.
+ * 
+ * @param props - Component properties containing modal and canvas callbacks.
+ */
+export const Toolbar: React.FC<{
   onOpenCanvasModal: () => void;
-}
-
-export const Toolbar: React.FC<ToolbarProps> = ({ getStageRef, onOpenCanvasModal }) => {
+  getStageRef: () => any;
+}> = ({ onOpenCanvasModal, getStageRef }) => {
   const {
     canvasName,
     setCanvasName,

@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Sidebar } from '../../src/components/Sidebar';
 import { useStore, createDefaultElement } from '../../src/store';
 
@@ -42,7 +42,7 @@ describe('Sidebar Component', () => {
   });
 
   it('shows properties in Inspector when an element is selected', () => {
-    const el = createDefaultElement('shape', 'Rectangle', 0, 0);
+    const el = createDefaultElement('shape', 'rectangle', 0, 0);
     useStore.getState().addElements([el]);
     useStore.getState().selectElement(el.id);
     useStore.getState().setSidebarTab('inspector');
