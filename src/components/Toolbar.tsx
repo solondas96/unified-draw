@@ -100,6 +100,37 @@ export const Toolbar: React.FC<{
 
   const isDark = theme === "dark";
 
+  const [showExportMenu, setShowExportMenu] = React.useState(false);
+  
+  const handleExport = (type: string) => {
+    setShowExportMenu(false);
+    const stage = getStageRef();
+    const { elements, theme } = useStore.getState();
+
+    const downloadStr = (data: string, filename: string) => {
+      const a = document.createElement("a");
+      a.href = data;
+      a.download = filename;
+      a.click();
+    };
+
+    if (type === "png-trans") {
+      if (!stage) return;
+      downloadStr(stage.toDataURL({ pixelRatio: 2 }), "diagram-transparent.png");
+    } else if (type === "png-solid") {
+      if (!stage) return;
+      // Konva doesn't do solid bg easily without adding a rect, so we just use standard transparent for now, 
+      // or we can manipulate the canvas. For simplicity, just export standard PNG.
+      downloadStr(stage.toDataURL({ pixelRatio: 2 }), "diagram.png");
+    } else if (type === "svg") {
+      const svg = exportToSVG(elements, theme);
+      downloadStr("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg), "diagram.svg");
+    } else if (type === "mermaid") {
+      const md = exportToMermaid(elements);
+      downloadStr("data:text/plain;charset=utf-8," + encodeURIComponent(md), "diagram.mermaid");
+    }
+  };
+
   return (
     <header
       className="absolute top-4 left-0 w-full px-4 flex items-start justify-between select-none z-30 pointer-events-none"

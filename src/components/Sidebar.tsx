@@ -151,17 +151,19 @@ export const Sidebar: React.FC = () => {
     panX,
     panY,
     zoom,
+    favoriteShapes,
+    toggleFavoriteShape,
   } = useStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  const categories = ["All", "Basic", "Arrows", "Flowchart", "Data Engineering"];
+  const categories = ["Favorites", "All", "Basic", "Arrows", "Flowchart", "Data Engineering"];
 
   // Filter shapes
   const filteredShapes = SHAPE_LIBRARY.filter((s) => {
     const matchesSearch = s.label.toLowerCase().includes(searchQuery.toLowerCase()) || s.type.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || s.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || (selectedCategory === "Favorites" ? favoriteShapes.includes(s.label) : s.category === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -275,7 +277,11 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={item.type}
                   onClick={() => handleAddShape(item.type)}
-                  className="flex items-center space-x-2 p-2 bg-slate-950/60 hover:bg-slate-800 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl transition-all text-left group"
+                  className="flex items-center space-x-2 p-2 bg-slate-950/60 hover:bg-slate-800 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl transition-all text-left group relative"
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("application/json", JSON.stringify({ type: item.type, meta: getShapeMeta(item.type) }));
+                  }}
                 >
                   <SidebarShapeThumbnail shapeType={item.type} />
                   <div className="flex-1 min-w-0">
@@ -284,6 +290,12 @@ export const Sidebar: React.FC = () => {
                     </div>
                     <div className="text-[10px] text-slate-500 truncate">{item.category}</div>
                   </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleFavoriteShape(item.label); }}
+                    className={`absolute right-2 top-2 p-1 rounded hover:bg-slate-700 transition-opacity ${favoriteShapes.includes(item.label) ? 'opacity-100 text-yellow-500' : 'opacity-0 group-hover:opacity-100 text-slate-500 hover:text-yellow-400'}`}
+                  >
+                    <Star className="w-3.5 h-3.5" fill={favoriteShapes.includes(item.label) ? "currentColor" : "none"} />
+                  </button>
                 </button>
               ))}
             </div>

@@ -83,6 +83,7 @@ interface StoreState {
   toggleLockSelected: () => void;
   showToast: (message: string) => void;
   setHelpPanelOpen: (isOpen: boolean) => void;
+  toggleFavoriteShape: (label: string) => void;
   nudgeSelected: (dx: number, dy: number) => void;
   alignSelected: (alignment: 'left'|'center'|'right'|'top'|'middle'|'bottom'|'distribute-h'|'distribute-v') => void;
   duplicateElement: (id: string) => void;
@@ -239,6 +240,7 @@ export const useStore = create<StoreState>((set, get) => ({
   sidebarTab: "library",
   toastMessage: null,
   isHelpPanelOpen: false,
+  favoriteShapes: (() => { try { return JSON.parse(localStorage.getItem("favoriteShapes") || "[]"); } catch { return []; } })(),
   showGrid: true,
   snapToGrid: false,
   gridSize: 20,
@@ -388,6 +390,20 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   setHelpPanelOpen: (isOpen) => set({ isHelpPanelOpen: isOpen }),
+  toggleFavoriteShape: (label) => {
+    const state = get();
+    let nextFavs;
+    if (state.favoriteShapes.includes(label)) {
+      nextFavs = state.favoriteShapes.filter(l => l !== label);
+    } else {
+      nextFavs = [...state.favoriteShapes, label];
+    }
+    try {
+      localStorage.setItem("favoriteShapes", JSON.stringify(nextFavs));
+    } catch(e) {}
+    set({ favoriteShapes: nextFavs });
+  },
+
   showToast: (message) => {
     set({ toastMessage: message });
     setTimeout(() => {

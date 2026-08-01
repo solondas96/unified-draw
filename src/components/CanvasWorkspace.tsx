@@ -632,6 +632,36 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
       <div
         ref={containerRef}
         className="w-full h-full relative overflow-hidden select-none"
+        onDragOver={(e) => {
+          e.preventDefault();
+          // We can optionally render a preview ghost here, but browser HTML5 drag provides a ghost natively
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          try {
+            const dataStr = e.dataTransfer.getData("application/json");
+            if (!dataStr) return;
+            const { type, meta } = JSON.parse(dataStr);
+            
+            // Convert drop client coords to world coords
+            const stage = stageRef.current;
+            if (stage) {
+              const transform = stage.getAbsoluteTransform().copy().invert();
+              const pos = transform.point({ x: e.clientX, y: e.clientY });
+              
+              const cx = pos.x - meta.defaultWidth / 2;
+              const cy = pos.y - meta.defaultHeight / 2;
+              
+              const newEl = createDefaultElement("shape", type, cx, cy, meta.defaultWidth, meta.defaultHeight);
+              newEl.fill = meta.defaultFill;
+              newEl.stroke = meta.defaultStroke;
+              addElement(newEl);
+              selectElement(newEl.id);
+            }
+          } catch(err) {
+            console.error(err);
+          }
+        }}
         style={{ background: "var(--canvas-bg)", cursor: getCursor() }}
       >
         {/* ── CSS Dot Grid ─────────────────────────────────────────── */}
