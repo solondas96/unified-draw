@@ -141,6 +141,8 @@ export interface TextStyle {
   fontStyle: "normal" | "italic";
   color?: string;
   alignment: "left" | "center" | "right" | "justify";
+  textDecoration?: "none" | "underline" | "line-through";
+  lineHeight?: number;
 }
 
 export type ConnectorRoutingMode = "straight" | "curved" | "orthogonal";

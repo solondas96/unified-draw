@@ -1238,6 +1238,8 @@ export const TextElementRenderer: React.FC<TextElementRendererProps> = ({
         fontFamily={ts?.fontFamily || "Virgil,Segoe UI,cursive"}
         opacity={element.opacity ?? 1}
         wrap="word"
+        textDecoration={ts?.textDecoration === "none" ? undefined : ts?.textDecoration}
+        lineHeight={ts?.lineHeight || 1.2}
         listening={false}
       />
     </Group>

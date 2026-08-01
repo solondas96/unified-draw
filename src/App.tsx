@@ -5,6 +5,7 @@ import { Toolbar } from "./components/Toolbar";
 import { CanvasWorkspace, type CanvasWorkspaceRef } from "./components/CanvasWorkspace";
 import { Sidebar } from "./components/Sidebar";
 import { StatusBar } from "./components/StatusBar";
+import { FloatingToolbar } from "./components/FloatingToolbar";
 import { SavedCanvasesModal } from "./components/SavedCanvasesModal";
 import { HelpPanel } from "./components/HelpPanel";
 
@@ -84,6 +85,9 @@ export function App() {
 
       {/* Floating Properties Panel (Absolute right) */}
       <Sidebar />
+
+      {/* Floating Toolbar (Absolute near element) */}
+      <FloatingToolbar />
 
       {/* Bottom Status Bar */}
       <StatusBar />

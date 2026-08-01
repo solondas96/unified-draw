@@ -862,7 +862,8 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
               padding: "4px 6px",
               zIndex: 50,
               boxSizing: "border-box",
-              lineHeight: "1.4",
+              textDecoration: editingEl.textStyle?.textDecoration || "none",
+              lineHeight: editingEl.textStyle?.lineHeight || 1.2,
             }}
           />
         )}

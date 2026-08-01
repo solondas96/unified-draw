@@ -139,14 +139,28 @@ function snap(v: number, size: number, enabled: boolean): number {
  * Uses the hand-drawn Virgil font by default.
  */
 export function createDefaultTextStyle(): TextStyle {
-  return {
+  const defaultStyle: TextStyle = {
     fontSize: 16,
     fontWeight: "normal",
     fontStyle: "normal",
     color: "#1e293b",
     alignment: "center",
     fontFamily: "Virgil,Segoe UI,cursive",
+    textDecoration: "none",
+    lineHeight: 1.2,
   };
+  try {
+    const saved = localStorage.getItem("lastUsedTextStyle");
+    if (saved) return { ...defaultStyle, ...JSON.parse(saved) };
+  } catch (e) {}
+  return defaultStyle;
+}
+
+export function saveDefaultTextStyle(style: Partial<TextStyle>) {
+  try {
+    const current = createDefaultTextStyle();
+    localStorage.setItem("lastUsedTextStyle", JSON.stringify({ ...current, ...style }));
+  } catch (e) {}
 }
 
 /** Read the current theme's shape stroke color from CSS custom property */
@@ -196,6 +210,7 @@ export function createDefaultElement(
     roughness: 1,
     opacity: 1,
     cornerRadius: 0,
+    textStyle: type === "text" || type === "shape" ? createDefaultTextStyle() : undefined,
   };
 }
 

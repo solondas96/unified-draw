@@ -468,6 +468,94 @@ export const Sidebar: React.FC = () => {
 
                 )}
 
+                
+                {/* ── Text Formatting ── */}
+                {(selectedElement.type === "text" || selectedElement.text !== undefined) && (
+                  <div className="space-y-4">
+                    <div className="h-px bg-slate-800" />
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Typography</label>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[10px] text-slate-500">Font Family</span>
+                        <select
+                          value={selectedElement.textStyle?.fontFamily || "Virgil,Segoe UI,cursive"}
+                          onChange={(e) => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontFamily: e.target.value } })}
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-slate-200"
+                        >
+                          <option value="Virgil,Segoe UI,cursive">Virgil (Handdrawn)</option>
+                          <option value="Inter, sans-serif">Inter (Modern)</option>
+                          <option value="monospace">Monospace (Code)</option>
+                          <option value="serif">Serif (Classic)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500">Font Size ({selectedElement.textStyle?.fontSize || 16}px)</span>
+                        <input
+                          type="range"
+                          min="8"
+                          max="120"
+                          value={selectedElement.textStyle?.fontSize || 16}
+                          onChange={(e) => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontSize: Number(e.target.value) } })}
+                          className="w-full mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontWeight: selectedElement.textStyle?.fontWeight === 'bold' ? 'normal' : 'bold' } })}
+                        className={`py-1.5 rounded font-bold ${selectedElement.textStyle?.fontWeight === 'bold' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                      >
+                        B
+                      </button>
+                      <button
+                        onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontStyle: selectedElement.textStyle?.fontStyle === 'italic' ? 'normal' : 'italic' } })}
+                        className={`py-1.5 rounded italic ${selectedElement.textStyle?.fontStyle === 'italic' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                      >
+                        I
+                      </button>
+                      <button
+                        onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, textDecoration: selectedElement.textStyle?.textDecoration === 'underline' ? 'none' : 'underline' } })}
+                        className={`py-1.5 rounded underline ${selectedElement.textStyle?.textDecoration === 'underline' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                      >
+                        U
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2">
+                      {['left', 'center', 'right', 'justify'].map(align => (
+                        <button
+                          key={align}
+                          onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, alignment: align as any } })}
+                          className={`py-1.5 rounded capitalize ${selectedElement.textStyle?.alignment === align ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                        >
+                          {align.charAt(0)}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="text-[10px] text-slate-500">Text Color</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {COLOR_PALETTE.map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, color: color } })}
+                            className={`w-6 h-6 rounded-md border flex items-center justify-center ${
+                              selectedElement.textStyle?.color === color ? "border-indigo-400 scale-110 shadow" : "border-slate-700"
+                            }`}
+                            style={{ backgroundColor: color === "transparent" ? "#0f172a" : color }}
+                          >
+                            {color === "transparent" && <span className="text-[10px] text-slate-500">∅</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
                 {/* Stroke Color & Width */}
                 <div className="space-y-2">
                   <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Stroke Color</label>
