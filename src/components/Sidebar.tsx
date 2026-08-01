@@ -147,6 +147,7 @@ export const Sidebar: React.FC = () => {
     bringToFront,
     sendToBack,
     deleteElements,
+    alignSelected,
     panX,
     panY,
     zoom,
@@ -603,7 +604,23 @@ export const Sidebar: React.FC = () => {
                   {selectedIds.length} Elements Selected
                 </div>
 
-                <div className="flex space-x-2">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Align</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button onClick={() => alignSelected('left')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Left</button>
+                    <button onClick={() => alignSelected('center')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Center</button>
+                    <button onClick={() => alignSelected('right')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Right</button>
+                    <button onClick={() => alignSelected('top')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Top</button>
+                    <button onClick={() => alignSelected('middle')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Middle</button>
+                    <button onClick={() => alignSelected('bottom')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Bottom</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <button onClick={() => alignSelected('distribute-h')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300 text-[10px]">Space Horiz</button>
+                    <button onClick={() => alignSelected('distribute-v')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300 text-[10px]">Space Vert</button>
+                  </div>
+                </div>
+
+                <div className="flex space-x-2 pt-2 border-t border-slate-800">
                   <button
                     onClick={duplicateSelected}
                     className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center space-x-1"

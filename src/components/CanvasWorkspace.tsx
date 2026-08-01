@@ -50,6 +50,7 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
       updateElement,
       deleteSelected,
       duplicateSelected,
+      nudgeSelected,
       copy,
       paste,
       undo,
@@ -111,6 +112,7 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
     // ── Inline text editing ────────────────────────────────────────────
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingText, setEditingText] = useState("");
+    const [liveDimensions, setLiveDimensions] = useState<{w: number, h: number, x: number, y: number, visible: boolean} | null>(null);
 
     useImperativeHandle(ref, () => ({ getStage: () => stageRef.current }));
 
@@ -179,6 +181,13 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
         } else if (e.key === "Delete" || e.key === "Backspace") {
           e.preventDefault();
           deleteSelected();
+        } else if (e.key.startsWith("Arrow")) {
+          e.preventDefault();
+          const amount = e.shiftKey ? 10 : 1;
+          if (e.key === "ArrowUp") nudgeSelected(0, -amount);
+          if (e.key === "ArrowDown") nudgeSelected(0, amount);
+          if (e.key === "ArrowLeft") nudgeSelected(-amount, 0);
+          if (e.key === "ArrowRight") nudgeSelected(amount, 0);
         } else if (e.key === "Escape") {
           clearSelection();
           setTool("select");
@@ -219,6 +228,7 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
       copy,
       paste,
       duplicateSelected,
+      nudgeSelected,
       selectAll,
       deleteSelected,
       clearSelection,
@@ -743,12 +753,25 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
                 return newBox;
               }}
               anchorSize={8}
-              anchorCornerRadius={2}
-              borderStroke="#6366f1"
+              anchorCornerRadius={10}
+              borderStroke="#8b5cf6"
               borderStrokeWidth={1.5}
-              anchorStroke="#6366f1"
+              anchorStroke="#8b5cf6"
               anchorFill="#ffffff"
               rotateAnchorOffset={24}
+              onTransform={() => {
+                const node = trRef.current?.nodes()[0];
+                if (node) {
+                  setLiveDimensions({
+                    w: Math.round(node.width() * node.scaleX()),
+                    h: Math.round(node.height() * node.scaleY()),
+                    x: node.x(),
+                    y: node.y(),
+                    visible: true
+                  });
+                }
+              }}
+              onTransformEnd={() => setLiveDimensions(null)}
               enabledAnchors={[
                 "top-left",
                 "top-center",
@@ -775,6 +798,11 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
                 e.preventDefault();
                 finishEditing();
               }
+            }}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = "auto";
+              target.style.height = `${target.scrollHeight}px`;
             }}
             style={{
               position: "absolute",
@@ -810,6 +838,19 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
         {connectorSource && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg z-40 pointer-events-none animate-pulse">
             Click a target shape to draw connector · Esc to cancel
+          </div>
+        )}
+
+        {/* ── Live dimensions indicator ────────────────────────────── */}
+        {liveDimensions && liveDimensions.visible && (
+          <div
+            className="absolute bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg z-50 pointer-events-none"
+            style={{
+              left: `${liveDimensions.x * zoom + panX}px`,
+              top: `${liveDimensions.y * zoom + panY - 30}px`,
+            }}
+          >
+            {liveDimensions.w} × {liveDimensions.h}
           </div>
         )}
       </div>

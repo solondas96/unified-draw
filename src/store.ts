@@ -80,6 +80,8 @@ interface StoreState {
   updateElements: (ids: string[], patch: Partial<Element>) => void;
   deleteElements: (ids: string[]) => void;
   deleteSelected: () => void;
+  nudgeSelected: (dx: number, dy: number) => void;
+  alignSelected: (alignment: 'left'|'center'|'right'|'top'|'middle'|'bottom'|'distribute-h'|'distribute-v') => void;
   duplicateElement: (id: string) => void;
   duplicateSelected: () => void;
 
@@ -285,7 +287,86 @@ export const useStore = create<StoreState>((set, get) => ({
     });
   },
 
-  deleteSelected: () => {
+  
+  nudgeSelected: (dx, dy) => {
+    const state = get();
+    if (state.selectedIds.length === 0) return;
+    const idSet = new Set(state.selectedIds);
+    const newElements = state.history.present.map(e => 
+      idSet.has(e.id) ? { ...e, x: e.x + dx, y: e.y + dy } : e
+    );
+    set({
+      history: pushHistory(state.history, newElements),
+      elements: newElements,
+      updatedAt: Date.now()
+    });
+  },
+
+  alignSelected: (alignment) => {
+    const state = get();
+    if (state.selectedIds.length < 2) return;
+    
+    const idSet = new Set(state.selectedIds);
+    const selected = state.history.present.filter(e => idSet.has(e.id));
+    if (selected.length < 2) return;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    selected.forEach(e => {
+      if (e.x < minX) minX = e.x;
+      if (e.y < minY) minY = e.y;
+      if (e.x + e.width > maxX) maxX = e.x + e.width;
+      if (e.y + e.height > maxY) maxY = e.y + e.height;
+    });
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    const newElements = state.history.present.map(e => {
+      if (!idSet.has(e.id)) return e;
+      const patch = { ...e };
+      switch (alignment) {
+        case 'left': patch.x = minX; break;
+        case 'center': patch.x = centerX - e.width / 2; break;
+        case 'right': patch.x = maxX - e.width; break;
+        case 'top': patch.y = minY; break;
+        case 'middle': patch.y = centerY - e.height / 2; break;
+        case 'bottom': patch.y = maxY - e.height; break;
+      }
+      return patch;
+    });
+
+    // Handle distribution separately because it needs sorting
+    if (alignment === 'distribute-h') {
+      const sorted = [...selected].sort((a, b) => a.x - b.x);
+      const totalWidth = sorted.reduce((sum, e) => sum + e.width, 0);
+      const availableSpace = (maxX - minX) - totalWidth;
+      const gap = availableSpace / (sorted.length - 1);
+      let currentX = minX;
+      sorted.forEach(e => {
+        const index = newElements.findIndex(ne => ne.id === e.id);
+        if (index !== -1) newElements[index].x = currentX;
+        currentX += e.width + gap;
+      });
+    } else if (alignment === 'distribute-v') {
+      const sorted = [...selected].sort((a, b) => a.y - b.y);
+      const totalHeight = sorted.reduce((sum, e) => sum + e.height, 0);
+      const availableSpace = (maxY - minY) - totalHeight;
+      const gap = availableSpace / (sorted.length - 1);
+      let currentY = minY;
+      sorted.forEach(e => {
+        const index = newElements.findIndex(ne => ne.id === e.id);
+        if (index !== -1) newElements[index].y = currentY;
+        currentY += e.height + gap;
+      });
+    }
+
+    set({
+      history: pushHistory(state.history, newElements),
+      elements: newElements,
+      updatedAt: Date.now()
+    });
+  },
+deleteSelected: () => {
     const { selectedIds } = get();
     if (selectedIds.length > 0) get().deleteElements(selectedIds);
   },
