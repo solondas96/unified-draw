@@ -1,8 +1,13 @@
 import React, { useRef, useState } from "react";
 import { useStore } from "../store";
 import type { ToolType } from "../types";
-import { exportToJSON, exportToPNG, exportToSVG, importFromJSON } from "../utils/exportImport";
-
+import {
+  exportToJSON,
+  exportToPNG,
+  exportToSVG,
+  importFromJSON,
+} from "../utils/exportImport";
+import { exportToMermaid } from "../utils/export";
 import {
   MousePointer,
   Hand,
@@ -38,7 +43,7 @@ import {
  * The top navigation and tool selection bar.
  * Handles tool switching, canvas title editing, theme toggling,
  * and triggering canvas load/export modals.
- * 
+ *
  * @param props - Component properties containing modal and canvas callbacks.
  */
 export const Toolbar: React.FC<{
@@ -86,57 +91,56 @@ export const Toolbar: React.FC<{
   };
 
   const tools: { type: ToolType; label: string; icon: React.ReactNode }[] = [
-    { type: "select", label: "Select (V)", icon: <MousePointer className="w-4 h-4" /> },
-    { type: "pan", label: "Pan (H / Space)", icon: <Hand className="w-4 h-4" /> },
-    { type: "freehand", label: "Draw (P)", icon: <Pencil className="w-4 h-4" /> },
-    { type: "rectangle", label: "Rectangle (R)", icon: <Square className="w-4 h-4" /> },
-    { type: "circle", label: "Circle (C)", icon: <Circle className="w-4 h-4" /> },
-    { type: "diamond", label: "Diamond (D)", icon: <Diamond className="w-4 h-4" /> },
-    { type: "arrow", label: "Arrow (A)", icon: <ArrowRight className="w-4 h-4" /> },
+    {
+      type: "select",
+      label: "Select (V)",
+      icon: <MousePointer className="w-4 h-4" />,
+    },
+    {
+      type: "pan",
+      label: "Pan (H / Space)",
+      icon: <Hand className="w-4 h-4" />,
+    },
+    {
+      type: "freehand",
+      label: "Draw (P)",
+      icon: <Pencil className="w-4 h-4" />,
+    },
+    {
+      type: "rectangle",
+      label: "Rectangle (R)",
+      icon: <Square className="w-4 h-4" />,
+    },
+    {
+      type: "circle",
+      label: "Circle (C)",
+      icon: <Circle className="w-4 h-4" />,
+    },
+    {
+      type: "diamond",
+      label: "Diamond (D)",
+      icon: <Diamond className="w-4 h-4" />,
+    },
+    {
+      type: "arrow",
+      label: "Arrow (A)",
+      icon: <ArrowRight className="w-4 h-4" />,
+    },
     { type: "line", label: "Line (L)", icon: <Minus className="w-4 h-4" /> },
     { type: "text", label: "Text (T)", icon: <Type className="w-4 h-4" /> },
-    { type: "connector", label: "Connector (X)", icon: <GitCommit className="w-4 h-4" /> },
+    {
+      type: "connector",
+      label: "Connector (X)",
+      icon: <GitCommit className="w-4 h-4" />,
+    },
   ];
 
   const isDark = theme === "dark";
 
-  const [showExportMenu, setShowExportMenu] = React.useState(false);
-  
-  const handleExport = (type: string) => {
-    setShowExportMenu(false);
-    const stage = getStageRef();
-    const { elements, theme } = useStore.getState();
-
-    const downloadStr = (data: string, filename: string) => {
-      const a = document.createElement("a");
-      a.href = data;
-      a.download = filename;
-      a.click();
-    };
-
-    if (type === "png-trans") {
-      if (!stage) return;
-      downloadStr(stage.toDataURL({ pixelRatio: 2 }), "diagram-transparent.png");
-    } else if (type === "png-solid") {
-      if (!stage) return;
-      // Konva doesn't do solid bg easily without adding a rect, so we just use standard transparent for now, 
-      // or we can manipulate the canvas. For simplicity, just export standard PNG.
-      downloadStr(stage.toDataURL({ pixelRatio: 2 }), "diagram.png");
-    } else if (type === "svg") {
-      const svg = exportToSVG(elements, theme);
-      downloadStr("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg), "diagram.svg");
-    } else if (type === "mermaid") {
-      const md = exportToMermaid(elements);
-      downloadStr("data:text/plain;charset=utf-8," + encodeURIComponent(md), "diagram.mermaid");
-    }
-  };
-
   return (
-    <header
-      className="absolute top-4 left-0 w-full px-4 flex items-start justify-between select-none z-30 pointer-events-none"
-    >
+    <header className="absolute top-4 left-0 w-full px-4 flex items-start justify-between select-none z-30 pointer-events-none">
       {/* ── Left: Logo & Title ─────────────────────────────────────── */}
-      <div 
+      <div
         className="flex items-center gap-3 p-2 rounded-xl pointer-events-auto transition-all"
         style={{
           background: "var(--surface-base)",
@@ -187,8 +191,10 @@ export const Toolbar: React.FC<{
             border: "1.5px solid transparent",
           }}
           onFocus={(e) => {
-            (e.target as HTMLInputElement).style.background = "var(--surface-raised)";
-            (e.target as HTMLInputElement).style.borderColor = "var(--border-medium)";
+            (e.target as HTMLInputElement).style.background =
+              "var(--surface-raised)";
+            (e.target as HTMLInputElement).style.borderColor =
+              "var(--border-medium)";
           }}
           onBlur={(e) => {
             (e.target as HTMLInputElement).style.background = "transparent";
@@ -231,38 +237,110 @@ export const Toolbar: React.FC<{
                 }}
               >
                 <FileMenuItem
-                  icon={<FilePlus className="w-3.5 h-3.5" style={{ color: "#6366f1" }} />}
+                  icon={
+                    <FilePlus
+                      className="w-3.5 h-3.5"
+                      style={{ color: "#6366f1" }}
+                    />
+                  }
                   label="New Diagram"
                   onClick={() => {
-                    if (confirm("Create a new diagram?")) { newCanvas(); setIsFileMenuOpen(false); }
+                    if (confirm("Create a new diagram?")) {
+                      newCanvas();
+                      setIsFileMenuOpen(false);
+                    }
                   }}
                 />
                 <FileMenuItem
-                  icon={<FolderOpen className="w-3.5 h-3.5" style={{ color: "#f59e0b" }} />}
+                  icon={
+                    <FolderOpen
+                      className="w-3.5 h-3.5"
+                      style={{ color: "#f59e0b" }}
+                    />
+                  }
                   label="Open Saved Diagrams…"
-                  onClick={() => { onOpenCanvasModal(); setIsFileMenuOpen(false); }}
+                  onClick={() => {
+                    onOpenCanvasModal();
+                    setIsFileMenuOpen(false);
+                  }}
                 />
-                <div className="h-px mx-2 my-1" style={{ background: "var(--border-subtle)" }} />
+                <div
+                  className="h-px mx-2 my-1"
+                  style={{ background: "var(--border-subtle)" }}
+                />
                 <FileMenuItem
-                  icon={<Upload className="w-3.5 h-3.5" style={{ color: "#6366f1" }} />}
+                  icon={
+                    <Upload
+                      className="w-3.5 h-3.5"
+                      style={{ color: "#6366f1" }}
+                    />
+                  }
                   label="Import JSON…"
                   onClick={() => fileInputRef.current?.click()}
                 />
-                <input ref={fileInputRef} type="file" accept=".json" onChange={handleImportFile} className="hidden" />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportFile}
+                  className="hidden"
+                />
                 <FileMenuItem
-                  icon={<Download className="w-3.5 h-3.5" style={{ color: "#10b981" }} />}
+                  icon={
+                    <Download
+                      className="w-3.5 h-3.5"
+                      style={{ color: "#10b981" }}
+                    />
+                  }
                   label="Export JSON"
-                  onClick={() => { exportToJSON(getCanvasData()); setIsFileMenuOpen(false); }}
+                  onClick={() => {
+                    exportToJSON(getCanvasData());
+                    setIsFileMenuOpen(false);
+                  }}
                 />
                 <FileMenuItem
-                  icon={<Image className="w-3.5 h-3.5" style={{ color: "#8b5cf6" }} />}
+                  icon={
+                    <Image
+                      className="w-3.5 h-3.5"
+                      style={{ color: "#8b5cf6" }}
+                    />
+                  }
                   label="Export PNG Image"
-                  onClick={() => { exportToPNG(getStageRef(), canvasName); setIsFileMenuOpen(false); }}
+                  onClick={() => {
+                    exportToPNG(getStageRef(), canvasName);
+                    setIsFileMenuOpen(false);
+                  }}
                 />
                 <FileMenuItem
-                  icon={<FileCode className="w-3.5 h-3.5" style={{ color: "#ec4899" }} />}
+                  icon={
+                    <FileCode
+                      className="w-3.5 h-3.5"
+                      style={{ color: "#ec4899" }}
+                    />
+                  }
                   label="Export SVG Vector"
-                  onClick={() => { exportToSVG(getStageRef(), canvasName); setIsFileMenuOpen(false); }}
+                  onClick={() => {
+                    exportToSVG(getStageRef(), canvasName);
+                    setIsFileMenuOpen(false);
+                  }}
+                />
+                <FileMenuItem
+                  icon={
+                    <FileCode
+                      className="w-3.5 h-3.5"
+                      style={{ color: "#3b82f6" }}
+                    />
+                  }
+                  label="Export Mermaid Flowchart"
+                  onClick={() => {
+                    const md = exportToMermaid(useStore.getState().elements);
+                    const a = document.createElement("a");
+                    a.href =
+                      "data:text/plain;charset=utf-8," + encodeURIComponent(md);
+                    a.download = "diagram.mermaid";
+                    a.click();
+                    setIsFileMenuOpen(false);
+                  }}
                 />
               </div>
             </>
@@ -302,14 +380,18 @@ export const Toolbar: React.FC<{
               }
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-hover)";
-                  (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    "var(--surface-hover)";
+                  (e.currentTarget as HTMLButtonElement).style.color =
+                    "var(--text-primary)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                  (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+                  (e.currentTarget as HTMLButtonElement).style.background =
+                    "transparent";
+                  (e.currentTarget as HTMLButtonElement).style.color =
+                    "var(--text-muted)";
                 }
               }}
             >
@@ -320,7 +402,7 @@ export const Toolbar: React.FC<{
       </div>
 
       {/* ── Right: Controls + Theme Toggle ────────────────────────── */}
-      <div 
+      <div
         className="flex items-center gap-2 pointer-events-auto p-1.5 rounded-xl transition-all"
         style={{
           background: "var(--surface-base)",
@@ -335,7 +417,11 @@ export const Toolbar: React.FC<{
           <ToolBtn onClick={undo} disabled={!canUndo()} title="Undo (Ctrl+Z)">
             <Undo2 className="w-4 h-4" />
           </ToolBtn>
-          <ToolBtn onClick={redo} disabled={!canRedo()} title="Redo (Ctrl+Y / Ctrl+Shift+Z)">
+          <ToolBtn
+            onClick={redo}
+            disabled={!canRedo()}
+            title="Redo (Ctrl+Y / Ctrl+Shift+Z)"
+          >
             <Redo2 className="w-4 h-4" />
           </ToolBtn>
         </ToolGroup>
@@ -346,7 +432,9 @@ export const Toolbar: React.FC<{
             <ZoomOut className="w-3.5 h-3.5" />
           </ToolBtn>
           <span
-            onClick={() => zoomTo(1, window.innerWidth / 2, window.innerHeight / 2)}
+            onClick={() =>
+              zoomTo(1, window.innerWidth / 2, window.innerHeight / 2)
+            }
             title="Click to reset zoom"
             className="px-2 text-xs font-mono cursor-pointer"
             style={{ color: "var(--text-secondary)" }}
@@ -356,9 +444,14 @@ export const Toolbar: React.FC<{
           <ToolBtn onClick={() => setZoom(zoom + 0.1)} title="Zoom In">
             <ZoomIn className="w-3.5 h-3.5" />
           </ToolBtn>
-          <div className="w-px h-4 mx-0.5" style={{ background: "var(--border-medium)" }} />
+          <div
+            className="w-px h-4 mx-0.5"
+            style={{ background: "var(--border-medium)" }}
+          />
           <ToolBtn
-            onClick={() => zoomTo(1, window.innerWidth / 2, window.innerHeight / 2)}
+            onClick={() =>
+              zoomTo(1, window.innerWidth / 2, window.innerHeight / 2)
+            }
             title="Reset to 100%"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -415,17 +508,23 @@ export const Toolbar: React.FC<{
           title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
           style={{
-            background: isDark ? "var(--surface-active)" : "var(--surface-raised)",
+            background: isDark
+              ? "var(--surface-active)"
+              : "var(--surface-raised)",
             border: "1.5px solid var(--border-medium)",
             color: "var(--text-secondary)",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor =
+              "var(--accent)";
+            (e.currentTarget as HTMLButtonElement).style.color =
+              "var(--text-primary)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-medium)";
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor =
+              "var(--border-medium)";
+            (e.currentTarget as HTMLButtonElement).style.color =
+              "var(--text-secondary)";
           }}
         >
           {/* Toggle track */}
@@ -478,7 +577,8 @@ const FileMenuItem: React.FC<{
     className="w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors rounded-lg mx-1 my-0.5 text-xs"
     style={{ width: "calc(100% - 8px)" }}
     onMouseEnter={(e) => {
-      (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-hover)";
+      (e.currentTarget as HTMLButtonElement).style.background =
+        "var(--surface-hover)";
     }}
     onMouseLeave={(e) => {
       (e.currentTarget as HTMLButtonElement).style.background = "transparent";
@@ -508,7 +608,14 @@ const ToolBtn: React.FC<{
   active?: boolean;
   activeColor?: string;
   children: React.ReactNode;
-}> = ({ onClick, disabled, title, active, activeColor = "var(--accent)", children }) => (
+}> = ({
+  onClick,
+  disabled,
+  title,
+  active,
+  activeColor = "var(--accent)",
+  children,
+}) => (
   <button
     onClick={onClick}
     disabled={disabled}
@@ -526,16 +633,21 @@ const ToolBtn: React.FC<{
     }
     onMouseEnter={(e) => {
       if (!disabled && !active) {
-        (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-hover)";
-        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
+        (e.currentTarget as HTMLButtonElement).style.background =
+          "var(--surface-hover)";
+        (e.currentTarget as HTMLButtonElement).style.color =
+          "var(--text-primary)";
       }
     }}
     onMouseLeave={(e) => {
       if (!active) {
         (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-        (e.currentTarget as HTMLButtonElement).style.color =
-          disabled ? "var(--text-muted)" : "var(--text-muted)";
-        (e.currentTarget as HTMLButtonElement).style.opacity = disabled ? "0.3" : "1";
+        (e.currentTarget as HTMLButtonElement).style.color = disabled
+          ? "var(--text-muted)"
+          : "var(--text-muted)";
+        (e.currentTarget as HTMLButtonElement).style.opacity = disabled
+          ? "0.3"
+          : "1";
       }
     }}
     onMouseDown={(e) => {

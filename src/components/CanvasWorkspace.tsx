@@ -16,7 +16,6 @@ import {
   TextElementRenderer,
 } from "../ShapeRenderer";
 import { getShapeMeta } from "../shapeLibrary";
-import { ContextMenu } from "./ContextMenu";
 import { getConnectionPoints, distance, Point } from "../utils/geometry";
 
 export interface CanvasWorkspaceRef {
@@ -301,17 +300,6 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>((_, ref) => {
     x: snapValue(x, snapToGrid, gridSize),
     y: snapValue(y, snapToGrid, gridSize),
   });
-
-  // Walk up Konva node tree to find a node with an element id
-  const findElementNode = (node: Konva.Node): string | null => {
-    let current: Konva.Node | null = node;
-    while (current) {
-      const id = current.id();
-      if (id && elements.some((el) => el.id === id)) return id;
-      current = current.parent as Konva.Node | null;
-    }
-    return null;
-  };
 
   // ── Mouse Down ────────────────────────────────────────────────────
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {

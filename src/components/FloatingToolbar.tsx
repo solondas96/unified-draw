@@ -7,12 +7,7 @@ import {
   Italic,
   Underline,
   Type,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
 } from "lucide-react";
-import { COLOR_PALETTE } from "./Sidebar";
 import type { Element } from "../types";
 
 export const FloatingToolbar: React.FC = () => {
@@ -192,7 +187,7 @@ export const FloatingToolbar: React.FC = () => {
             </button>
             {/* Simple hover popover for colors */}
             <div className="absolute top-full left-0 mt-2 hidden group-hover:flex bg-slate-800 p-2 rounded shadow-xl border border-slate-700 gap-1 z-50">
-              {COLOR_PALETTE.map((c) => (
+              {COLOR_PALETTE.map((c: string) => (
                 <button
                   key={c}
                   onClick={() =>

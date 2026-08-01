@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { useStore, createDefaultElement, createDefaultTextStyle } from "../store";
+import {
+  useStore,
+  createDefaultElement,
+  createDefaultTextStyle,
+} from "../store";
 import { SHAPE_LIBRARY, getShapeMeta } from "../shapeLibrary";
 import type { ShapeType, Element } from "../types";
 import { Stage, Layer } from "react-konva";
@@ -24,6 +28,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  Star,
 } from "lucide-react";
 
 // ─── SidebarTab: theme-aware tab button ────────────────────────────
@@ -50,13 +55,16 @@ const SidebarTab: React.FC<{
     }
     onMouseEnter={(e) => {
       if (!active) {
-        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
-        (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-hover)";
+        (e.currentTarget as HTMLButtonElement).style.color =
+          "var(--text-primary)";
+        (e.currentTarget as HTMLButtonElement).style.background =
+          "var(--surface-hover)";
       }
     }}
     onMouseLeave={(e) => {
       if (!active) {
-        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+        (e.currentTarget as HTMLButtonElement).style.color =
+          "var(--text-muted)";
         (e.currentTarget as HTMLButtonElement).style.background = "transparent";
       }
     }}
@@ -75,10 +83,15 @@ const SidebarTab: React.FC<{
 );
 
 // Helper component for shape preview thumbnails
-const SidebarShapeThumbnail: React.FC<{ shapeType: ShapeType }> = ({ shapeType }) => {
+const SidebarShapeThumbnail: React.FC<{ shapeType: ShapeType }> = ({
+  shapeType,
+}) => {
   const meta = getShapeMeta(shapeType);
   const size = 44;
-  const scale = Math.min((size - 8) / meta.defaultWidth, (size - 8) / meta.defaultHeight);
+  const scale = Math.min(
+    (size - 8) / meta.defaultWidth,
+    (size - 8) / meta.defaultHeight,
+  );
   const w = meta.defaultWidth * scale;
   const h = meta.defaultHeight * scale;
   const x = (size - w) / 2;
@@ -114,8 +127,14 @@ const SidebarShapeThumbnail: React.FC<{ shapeType: ShapeType }> = ({ shapeType }
         justifyContent: "center",
         transition: "border-color 0.2s",
       }}
-      onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = "var(--accent)")}
-      onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-subtle)")}
+      onMouseEnter={(e) =>
+        ((e.currentTarget as HTMLDivElement).style.borderColor =
+          "var(--accent)")
+      }
+      onMouseLeave={(e) =>
+        ((e.currentTarget as HTMLDivElement).style.borderColor =
+          "var(--border-subtle)")
+      }
     >
       <Stage width={size} height={size}>
         <Layer>
@@ -128,7 +147,7 @@ const SidebarShapeThumbnail: React.FC<{ shapeType: ShapeType }> = ({ shapeType }
 
 /**
  * The right-hand panel containing the Library, Inspector, and Layers tabs.
- * Allows users to drag in shapes, edit selected element properties, 
+ * Allows users to drag in shapes, edit selected element properties,
  * and manage Z-index layering.
  */
 export const Sidebar: React.FC = () => {
@@ -158,12 +177,25 @@ export const Sidebar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  const categories = ["Favorites", "All", "Basic", "Arrows", "Flowchart", "Data Engineering"];
+  const categories = [
+    "Favorites",
+    "All",
+    "Basic",
+    "Arrows",
+    "Flowchart",
+    "Data Engineering",
+  ];
 
   // Filter shapes
   const filteredShapes = SHAPE_LIBRARY.filter((s) => {
-    const matchesSearch = s.label.toLowerCase().includes(searchQuery.toLowerCase()) || s.type.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || (selectedCategory === "Favorites" ? favoriteShapes.includes(s.label) : s.category === selectedCategory);
+    const matchesSearch =
+      s.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.type.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" ||
+      (selectedCategory === "Favorites"
+        ? favoriteShapes.includes(s.label)
+        : s.category === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -173,14 +205,24 @@ export const Sidebar: React.FC = () => {
     const cx = (-panX + window.innerWidth / 2) / zoom - meta.defaultWidth / 2;
     const cy = (-panY + window.innerHeight / 2) / zoom - meta.defaultHeight / 2;
 
-    const el = createDefaultElement("shape", shapeType, cx, cy, meta.defaultWidth, meta.defaultHeight);
+    const el = createDefaultElement(
+      "shape",
+      shapeType,
+      cx,
+      cy,
+      meta.defaultWidth,
+      meta.defaultHeight,
+    );
     el.fill = meta.defaultFill;
     el.stroke = meta.defaultStroke;
     addElement(el);
     selectElement(el.id);
   };
 
-  const selectedElement = selectedIds.length === 1 ? elements.find((e) => e.id === selectedIds[0]) : null;
+  const selectedElement =
+    selectedIds.length === 1
+      ? elements.find((e) => e.id === selectedIds[0])
+      : null;
 
   // Color preset palette
   const COLOR_PALETTE = [
@@ -263,7 +305,9 @@ export const Sidebar: React.FC = () => {
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`text-[11px] px-2.5 py-1 rounded-md transition-colors ${
-                    selectedCategory === cat ? "bg-indigo-600 text-white font-medium" : "bg-slate-800/80 text-slate-400 hover:text-slate-200"
+                    selectedCategory === cat
+                      ? "bg-indigo-600 text-white font-medium"
+                      : "bg-slate-800/80 text-slate-400 hover:text-slate-200"
                   }`}
                 >
                   {cat}
@@ -274,13 +318,19 @@ export const Sidebar: React.FC = () => {
             {/* Shape Grid */}
             <div className="grid grid-cols-2 gap-2">
               {filteredShapes.map((item) => (
-                <button
+                <div
                   key={item.type}
                   onClick={() => handleAddShape(item.type)}
-                  className="flex items-center space-x-2 p-2 bg-slate-950/60 hover:bg-slate-800 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl transition-all text-left group relative"
+                  className="flex items-center space-x-2 p-2 bg-slate-950/60 hover:bg-slate-800 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl transition-all text-left group relative cursor-pointer"
                   draggable
                   onDragStart={(e) => {
-                    e.dataTransfer.setData("application/json", JSON.stringify({ type: item.type, meta: getShapeMeta(item.type) }));
+                    e.dataTransfer.setData(
+                      "application/json",
+                      JSON.stringify({
+                        type: item.type,
+                        meta: getShapeMeta(item.type),
+                      }),
+                    );
                   }}
                 >
                   <SidebarShapeThumbnail shapeType={item.type} />
@@ -288,15 +338,27 @@ export const Sidebar: React.FC = () => {
                     <div className="text-xs font-medium text-slate-300 truncate group-hover:text-white">
                       {item.label}
                     </div>
-                    <div className="text-[10px] text-slate-500 truncate">{item.category}</div>
+                    <div className="text-[10px] text-slate-500 truncate">
+                      {item.category}
+                    </div>
                   </div>
                   <button
-                    onClick={(e) => { e.stopPropagation(); toggleFavoriteShape(item.label); }}
-                    className={`absolute right-2 top-2 p-1 rounded hover:bg-slate-700 transition-opacity ${favoriteShapes.includes(item.label) ? 'opacity-100 text-yellow-500' : 'opacity-0 group-hover:opacity-100 text-slate-500 hover:text-yellow-400'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavoriteShape(item.label);
+                    }}
+                    className={`absolute right-2 top-2 p-1 rounded hover:bg-slate-700 transition-opacity ${favoriteShapes.includes(item.label) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-slate-500 hover:text-yellow-400"}`}
                   >
-                    <Star className="w-3.5 h-3.5" fill={favoriteShapes.includes(item.label) ? "currentColor" : "none"} />
+                    <Star
+                      className="w-3.5 h-3.5"
+                      fill={
+                        favoriteShapes.includes(item.label)
+                          ? "currentColor"
+                          : "none"
+                      }
+                    />
                   </button>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -309,7 +371,9 @@ export const Sidebar: React.FC = () => {
               <div className="py-12 text-center text-slate-500 text-xs space-y-2">
                 <Sliders className="w-8 h-8 mx-auto opacity-30" />
                 <p>No element selected</p>
-                <p className="text-[11px] text-slate-600">Click on an element on the canvas to edit properties.</p>
+                <p className="text-[11px] text-slate-600">
+                  Click on an element on the canvas to edit properties.
+                </p>
               </div>
             ) : selectedElement ? (
               /* Single Element Property Editor */
@@ -337,36 +401,60 @@ export const Sidebar: React.FC = () => {
                   </div>
                 </div>
 
-                
                 {/* ── Connector Settings ── */}
                 {selectedElement.type === "connector" && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Routing Mode</label>
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        Routing Mode
+                      </label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
-                          onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, routingMode: 'straight' } })}
-                          className={`py-1.5 rounded ${selectedElement.connector?.routingMode === 'straight' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                          onClick={() =>
+                            updateElement(selectedElement.id, {
+                              connector: {
+                                ...selectedElement.connector!,
+                                routingMode: "straight",
+                              },
+                            })
+                          }
+                          className={`py-1.5 rounded ${selectedElement.connector?.routingMode === "straight" ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                         >
                           Straight
                         </button>
                         <button
-                          onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, routingMode: 'curved' } })}
-                          className={`py-1.5 rounded ${selectedElement.connector?.routingMode === 'curved' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                          onClick={() =>
+                            updateElement(selectedElement.id, {
+                              connector: {
+                                ...selectedElement.connector!,
+                                routingMode: "curved",
+                              },
+                            })
+                          }
+                          className={`py-1.5 rounded ${selectedElement.connector?.routingMode === "curved" ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                         >
                           Curved
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
-                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Start Marker</label>
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        Start Marker
+                      </label>
                       <div className="grid grid-cols-3 gap-2">
-                        {['none', 'arrow', 'circle'].map(m => (
+                        {["none", "arrow", "circle"].map((m) => (
                           <button
                             key={m}
-                            onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, startMarker: m as any } })}
-                            className={`py-1.5 rounded capitalize ${selectedElement.connector?.startMarker === m ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                            onClick={() =>
+                              updateElement(selectedElement.id, {
+                                connector: {
+                                  ...selectedElement.connector!,
+                                  startMarker: m as any,
+                                },
+                              })
+                            }
+                            className={`py-1.5 rounded capitalize ${selectedElement.connector?.startMarker === m ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                           >
                             {m}
                           </button>
@@ -375,13 +463,22 @@ export const Sidebar: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">End Marker</label>
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        End Marker
+                      </label>
                       <div className="grid grid-cols-3 gap-2">
-                        {['none', 'arrow', 'circle'].map(m => (
+                        {["none", "arrow", "circle"].map((m) => (
                           <button
                             key={m}
-                            onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, endMarker: m as any } })}
-                            className={`py-1.5 rounded capitalize ${selectedElement.connector?.endMarker === m ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                            onClick={() =>
+                              updateElement(selectedElement.id, {
+                                connector: {
+                                  ...selectedElement.connector!,
+                                  endMarker: m as any,
+                                },
+                              })
+                            }
+                            className={`py-1.5 rounded capitalize ${selectedElement.connector?.endMarker === m ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                           >
                             {m}
                           </button>
@@ -390,13 +487,22 @@ export const Sidebar: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Line Style</label>
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        Line Style
+                      </label>
                       <div className="grid grid-cols-3 gap-2">
-                        {['solid', 'dashed', 'dotted'].map(s => (
+                        {["solid", "dashed", "dotted"].map((s) => (
                           <button
                             key={s}
-                            onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, strokeStyle: s as any } })}
-                            className={`py-1.5 rounded capitalize ${(selectedElement.connector?.strokeStyle || 'solid') === s ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                            onClick={() =>
+                              updateElement(selectedElement.id, {
+                                connector: {
+                                  ...selectedElement.connector!,
+                                  strokeStyle: s as any,
+                                },
+                              })
+                            }
+                            className={`py-1.5 rounded capitalize ${(selectedElement.connector?.strokeStyle || "solid") === s ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                           >
                             {s}
                           </button>
@@ -408,107 +514,180 @@ export const Sidebar: React.FC = () => {
 
                 {/* Geometry */}
                 {selectedElement.type !== "connector" && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Transform</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <span className="text-[10px] text-slate-500">X Position</span>
-                      <input
-                        type="number"
-                        value={Math.round(selectedElement.x)}
-                        onChange={(e) => updateElement(selectedElement.id, { x: Number(e.target.value) })}
-                        className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500">Y Position</span>
-                      <input
-                        type="number"
-                        value={Math.round(selectedElement.y)}
-                        onChange={(e) => updateElement(selectedElement.id, { y: Number(e.target.value) })}
-                        className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500">Width</span>
-                      <input
-                        type="number"
-                        value={Math.round(selectedElement.width)}
-                        onChange={(e) => updateElement(selectedElement.id, { width: Math.max(10, Number(e.target.value)) })}
-                        className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500">Height</span>
-                      <input
-                        type="number"
-                        value={Math.round(selectedElement.height)}
-                        onChange={(e) => updateElement(selectedElement.id, { height: Math.max(10, Number(e.target.value)) })}
-                        className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
-                      />
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                      Transform
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[10px] text-slate-500">
+                          X Position
+                        </span>
+                        <input
+                          type="number"
+                          value={Math.round(selectedElement.x)}
+                          onChange={(e) =>
+                            updateElement(selectedElement.id, {
+                              x: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500">
+                          Y Position
+                        </span>
+                        <input
+                          type="number"
+                          value={Math.round(selectedElement.y)}
+                          onChange={(e) =>
+                            updateElement(selectedElement.id, {
+                              y: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500">
+                          Width
+                        </span>
+                        <input
+                          type="number"
+                          value={Math.round(selectedElement.width)}
+                          onChange={(e) =>
+                            updateElement(selectedElement.id, {
+                              width: Math.max(10, Number(e.target.value)),
+                            })
+                          }
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500">
+                          Height
+                        </span>
+                        <input
+                          type="number"
+                          value={Math.round(selectedElement.height)}
+                          onChange={(e) =>
+                            updateElement(selectedElement.id, {
+                              height: Math.max(10, Number(e.target.value)),
+                            })
+                          }
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-
                 )}
 
                 {/* Fill Color */}
                 {selectedElement.type !== "connector" && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Fill Color</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {COLOR_PALETTE.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => updateElement(selectedElement.id, { fill: color })}
-                        className={`w-6 h-6 rounded-md border flex items-center justify-center ${
-                          selectedElement.fill === color ? "border-indigo-400 scale-110 shadow" : "border-slate-700"
-                        }`}
-                        style={{ backgroundColor: color === "transparent" ? "#0f172a" : color }}
-                      >
-                        {color === "transparent" && <span className="text-[10px] text-slate-500">∅</span>}
-                      </button>
-                    ))}
-                    <input
-                      type="color"
-                      value={selectedElement.fill === "transparent" ? "#ffffff" : selectedElement.fill}
-                      onChange={(e) => updateElement(selectedElement.id, { fill: e.target.value })}
-                      className="w-6 h-6 rounded border border-slate-700 bg-transparent cursor-pointer p-0"
-                    />
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                      Fill Color
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {COLOR_PALETTE.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() =>
+                            updateElement(selectedElement.id, { fill: color })
+                          }
+                          className={`w-6 h-6 rounded-md border flex items-center justify-center ${
+                            selectedElement.fill === color
+                              ? "border-indigo-400 scale-110 shadow"
+                              : "border-slate-700"
+                          }`}
+                          style={{
+                            backgroundColor:
+                              color === "transparent" ? "#0f172a" : color,
+                          }}
+                        >
+                          {color === "transparent" && (
+                            <span className="text-[10px] text-slate-500">
+                              ∅
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                      <input
+                        type="color"
+                        value={
+                          selectedElement.fill === "transparent"
+                            ? "#ffffff"
+                            : selectedElement.fill
+                        }
+                        onChange={(e) =>
+                          updateElement(selectedElement.id, {
+                            fill: e.target.value,
+                          })
+                        }
+                        className="w-6 h-6 rounded border border-slate-700 bg-transparent cursor-pointer p-0"
+                      />
+                    </div>
                   </div>
-                </div>
-
                 )}
 
-                
                 {/* ── Text Formatting ── */}
-                {(selectedElement.type === "text" || selectedElement.text !== undefined) && (
+                {(selectedElement.type === "text" ||
+                  selectedElement.text !== undefined) && (
                   <div className="space-y-4">
                     <div className="h-px bg-slate-800" />
-                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Typography</label>
-                    
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                      Typography
+                    </label>
+
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <span className="text-[10px] text-slate-500">Font Family</span>
+                        <span className="text-[10px] text-slate-500">
+                          Font Family
+                        </span>
                         <select
-                          value={selectedElement.textStyle?.fontFamily || "Virgil,Segoe UI,cursive"}
-                          onChange={(e) => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontFamily: e.target.value } })}
+                          value={
+                            selectedElement.textStyle?.fontFamily ||
+                            "Virgil,Segoe UI,cursive"
+                          }
+                          onChange={(e) =>
+                            updateElement(selectedElement.id, {
+                              textStyle: {
+                                ...selectedElement.textStyle!,
+                                fontFamily: e.target.value,
+                              },
+                            })
+                          }
                           className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-slate-200"
                         >
-                          <option value="Virgil,Segoe UI,cursive">Virgil (Handdrawn)</option>
-                          <option value="Inter, sans-serif">Inter (Modern)</option>
+                          <option value="Virgil,Segoe UI,cursive">
+                            Virgil (Handdrawn)
+                          </option>
+                          <option value="Inter, sans-serif">
+                            Inter (Modern)
+                          </option>
                           <option value="monospace">Monospace (Code)</option>
                           <option value="serif">Serif (Classic)</option>
                         </select>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500">Font Size ({selectedElement.textStyle?.fontSize || 16}px)</span>
+                        <span className="text-[10px] text-slate-500">
+                          Font Size ({selectedElement.textStyle?.fontSize || 16}
+                          px)
+                        </span>
                         <input
                           type="range"
                           min="8"
                           max="120"
                           value={selectedElement.textStyle?.fontSize || 16}
-                          onChange={(e) => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontSize: Number(e.target.value) } })}
+                          onChange={(e) =>
+                            updateElement(selectedElement.id, {
+                              textStyle: {
+                                ...selectedElement.textStyle!,
+                                fontSize: Number(e.target.value),
+                              },
+                            })
+                          }
                           className="w-full mt-1"
                         />
                       </div>
@@ -516,31 +695,70 @@ export const Sidebar: React.FC = () => {
 
                     <div className="grid grid-cols-3 gap-2">
                       <button
-                        onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontWeight: selectedElement.textStyle?.fontWeight === 'bold' ? 'normal' : 'bold' } })}
-                        className={`py-1.5 rounded font-bold ${selectedElement.textStyle?.fontWeight === 'bold' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                        onClick={() =>
+                          updateElement(selectedElement.id, {
+                            textStyle: {
+                              ...selectedElement.textStyle!,
+                              fontWeight:
+                                selectedElement.textStyle?.fontWeight === "bold"
+                                  ? "normal"
+                                  : "bold",
+                            },
+                          })
+                        }
+                        className={`py-1.5 rounded font-bold ${selectedElement.textStyle?.fontWeight === "bold" ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                       >
                         B
                       </button>
                       <button
-                        onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, fontStyle: selectedElement.textStyle?.fontStyle === 'italic' ? 'normal' : 'italic' } })}
-                        className={`py-1.5 rounded italic ${selectedElement.textStyle?.fontStyle === 'italic' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                        onClick={() =>
+                          updateElement(selectedElement.id, {
+                            textStyle: {
+                              ...selectedElement.textStyle!,
+                              fontStyle:
+                                selectedElement.textStyle?.fontStyle ===
+                                "italic"
+                                  ? "normal"
+                                  : "italic",
+                            },
+                          })
+                        }
+                        className={`py-1.5 rounded italic ${selectedElement.textStyle?.fontStyle === "italic" ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                       >
                         I
                       </button>
                       <button
-                        onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, textDecoration: selectedElement.textStyle?.textDecoration === 'underline' ? 'none' : 'underline' } })}
-                        className={`py-1.5 rounded underline ${selectedElement.textStyle?.textDecoration === 'underline' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                        onClick={() =>
+                          updateElement(selectedElement.id, {
+                            textStyle: {
+                              ...selectedElement.textStyle!,
+                              textDecoration:
+                                selectedElement.textStyle?.textDecoration ===
+                                "underline"
+                                  ? "none"
+                                  : "underline",
+                            },
+                          })
+                        }
+                        className={`py-1.5 rounded underline ${selectedElement.textStyle?.textDecoration === "underline" ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                       >
                         U
                       </button>
                     </div>
 
                     <div className="grid grid-cols-4 gap-2">
-                      {['left', 'center', 'right', 'justify'].map(align => (
+                      {["left", "center", "right", "justify"].map((align) => (
                         <button
                           key={align}
-                          onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, alignment: align as any } })}
-                          className={`py-1.5 rounded capitalize ${selectedElement.textStyle?.alignment === align ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                          onClick={() =>
+                            updateElement(selectedElement.id, {
+                              textStyle: {
+                                ...selectedElement.textStyle!,
+                                alignment: align as any,
+                              },
+                            })
+                          }
+                          className={`py-1.5 rounded capitalize ${selectedElement.textStyle?.alignment === align ? "bg-indigo-600 text-white" : "bg-slate-950 text-slate-300"}`}
                         >
                           {align.charAt(0)}
                         </button>
@@ -548,18 +766,36 @@ export const Sidebar: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[10px] text-slate-500">Text Color</span>
+                      <span className="text-[10px] text-slate-500">
+                        Text Color
+                      </span>
                       <div className="flex flex-wrap gap-1.5">
                         {COLOR_PALETTE.map((color) => (
                           <button
                             key={color}
-                            onClick={() => updateElement(selectedElement.id, { textStyle: { ...selectedElement.textStyle!, color: color } })}
+                            onClick={() =>
+                              updateElement(selectedElement.id, {
+                                textStyle: {
+                                  ...selectedElement.textStyle!,
+                                  color: color,
+                                },
+                              })
+                            }
                             className={`w-6 h-6 rounded-md border flex items-center justify-center ${
-                              selectedElement.textStyle?.color === color ? "border-indigo-400 scale-110 shadow" : "border-slate-700"
+                              selectedElement.textStyle?.color === color
+                                ? "border-indigo-400 scale-110 shadow"
+                                : "border-slate-700"
                             }`}
-                            style={{ backgroundColor: color === "transparent" ? "#0f172a" : color }}
+                            style={{
+                              backgroundColor:
+                                color === "transparent" ? "#0f172a" : color,
+                            }}
                           >
-                            {color === "transparent" && <span className="text-[10px] text-slate-500">∅</span>}
+                            {color === "transparent" && (
+                              <span className="text-[10px] text-slate-500">
+                                ∅
+                              </span>
+                            )}
                           </button>
                         ))}
                       </div>
@@ -567,25 +803,36 @@ export const Sidebar: React.FC = () => {
                   </div>
                 )}
 
-
                 {/* Stroke Color & Width */}
                 <div className="space-y-2">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Stroke Color</label>
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Stroke Color
+                  </label>
                   <div className="flex flex-wrap gap-1.5">
-                    {COLOR_PALETTE.filter((c) => c !== "transparent").map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => updateElement(selectedElement.id, { stroke: color })}
-                        className={`w-6 h-6 rounded-md border ${
-                          selectedElement.stroke === color ? "border-indigo-400 scale-110 shadow" : "border-slate-700"
-                        }`}
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
+                    {COLOR_PALETTE.filter((c) => c !== "transparent").map(
+                      (color) => (
+                        <button
+                          key={color}
+                          onClick={() =>
+                            updateElement(selectedElement.id, { stroke: color })
+                          }
+                          className={`w-6 h-6 rounded-md border ${
+                            selectedElement.stroke === color
+                              ? "border-indigo-400 scale-110 shadow"
+                              : "border-slate-700"
+                          }`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ),
+                    )}
                     <input
                       type="color"
                       value={selectedElement.stroke || "#1e293b"}
-                      onChange={(e) => updateElement(selectedElement.id, { stroke: e.target.value })}
+                      onChange={(e) =>
+                        updateElement(selectedElement.id, {
+                          stroke: e.target.value,
+                        })
+                      }
                       className="w-6 h-6 rounded border border-slate-700 bg-transparent cursor-pointer p-0"
                     />
                   </div>
@@ -600,7 +847,11 @@ export const Sidebar: React.FC = () => {
                       min="1"
                       max="10"
                       value={selectedElement.strokeWidth || 2}
-                      onChange={(e) => updateElement(selectedElement.id, { strokeWidth: Number(e.target.value) })}
+                      onChange={(e) =>
+                        updateElement(selectedElement.id, {
+                          strokeWidth: Number(e.target.value),
+                        })
+                      }
                       className="w-full accent-indigo-500"
                     />
                   </div>
@@ -610,7 +861,11 @@ export const Sidebar: React.FC = () => {
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] text-slate-400">
                     <span>Hand-drawn Aesthetic (Roughness)</span>
-                    <span>{(selectedElement.roughness ?? 1) === 0 ? "Clean" : "Rough"}</span>
+                    <span>
+                      {(selectedElement.roughness ?? 1) === 0
+                        ? "Clean"
+                        : "Rough"}
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -618,7 +873,11 @@ export const Sidebar: React.FC = () => {
                     max="3"
                     step="1"
                     value={selectedElement.roughness ?? 1}
-                    onChange={(e) => updateElement(selectedElement.id, { roughness: Number(e.target.value) })}
+                    onChange={(e) =>
+                      updateElement(selectedElement.id, {
+                        roughness: Number(e.target.value),
+                      })
+                    }
                     className="w-full accent-indigo-500"
                   />
                 </div>
@@ -627,7 +886,9 @@ export const Sidebar: React.FC = () => {
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] text-slate-400">
                     <span>Opacity</span>
-                    <span>{Math.round((selectedElement.opacity ?? 1) * 100)}%</span>
+                    <span>
+                      {Math.round((selectedElement.opacity ?? 1) * 100)}%
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -635,25 +896,37 @@ export const Sidebar: React.FC = () => {
                     max="1"
                     step="0.05"
                     value={selectedElement.opacity ?? 1}
-                    onChange={(e) => updateElement(selectedElement.id, { opacity: Number(e.target.value) })}
+                    onChange={(e) =>
+                      updateElement(selectedElement.id, {
+                        opacity: Number(e.target.value),
+                      })
+                    }
                     className="w-full accent-indigo-500"
                   />
                 </div>
 
                 {/* Text Formatting */}
                 <div className="space-y-2 pt-2 border-t border-slate-800">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Text Content & Style</label>
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Text Content & Style
+                  </label>
                   <textarea
                     rows={2}
                     value={selectedElement.text || ""}
-                    onChange={(e) => updateElement(selectedElement.id, { text: e.target.value })}
+                    onChange={(e) =>
+                      updateElement(selectedElement.id, {
+                        text: e.target.value,
+                      })
+                    }
                     placeholder="Enter text..."
                     className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
                   />
 
                   <div className="flex items-center space-x-2">
                     <div className="flex-1">
-                      <span className="text-[10px] text-slate-500">Font Size</span>
+                      <span className="text-[10px] text-slate-500">
+                        Font Size
+                      </span>
                       <input
                         type="number"
                         value={selectedElement.textStyle?.fontSize || 16}
@@ -678,7 +951,10 @@ export const Sidebar: React.FC = () => {
                             textStyle: {
                               ...createDefaultTextStyle(),
                               ...selectedElement.textStyle,
-                              fontWeight: selectedElement.textStyle?.fontWeight === "bold" ? "normal" : "bold",
+                              fontWeight:
+                                selectedElement.textStyle?.fontWeight === "bold"
+                                  ? "normal"
+                                  : "bold",
                             },
                           })
                         }
@@ -697,7 +973,11 @@ export const Sidebar: React.FC = () => {
                             textStyle: {
                               ...createDefaultTextStyle(),
                               ...selectedElement.textStyle,
-                              fontStyle: selectedElement.textStyle?.fontStyle === "italic" ? "normal" : "italic",
+                              fontStyle:
+                                selectedElement.textStyle?.fontStyle ===
+                                "italic"
+                                  ? "normal"
+                                  : "italic",
                             },
                           })
                         }
@@ -724,14 +1004,21 @@ export const Sidebar: React.FC = () => {
                             })
                           }
                           className={`p-1.5 border rounded ${
-                            (selectedElement.textStyle?.alignment || "center") === align
+                            (selectedElement.textStyle?.alignment ||
+                              "center") === align
                               ? "bg-indigo-600 text-white border-indigo-500"
                               : "bg-slate-950 text-slate-400 border-slate-800"
                           }`}
                         >
-                          {align === "left" && <AlignLeft className="w-3.5 h-3.5" />}
-                          {align === "center" && <AlignCenter className="w-3.5 h-3.5" />}
-                          {align === "right" && <AlignRight className="w-3.5 h-3.5" />}
+                          {align === "left" && (
+                            <AlignLeft className="w-3.5 h-3.5" />
+                          )}
+                          {align === "center" && (
+                            <AlignCenter className="w-3.5 h-3.5" />
+                          )}
+                          {align === "right" && (
+                            <AlignRight className="w-3.5 h-3.5" />
+                          )}
                         </button>
                       ))}
                     </div>
@@ -740,7 +1027,9 @@ export const Sidebar: React.FC = () => {
 
                 {/* Layer Ordering */}
                 <div className="space-y-2 pt-2 border-t border-slate-800">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Layer Order</label>
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Layer Order
+                  </label>
                   <div className="grid grid-cols-4 gap-1">
                     <button
                       onClick={() => bringToFront(selectedElement.id)}
@@ -781,18 +1070,60 @@ export const Sidebar: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Align</label>
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Align
+                  </label>
                   <div className="grid grid-cols-3 gap-2">
-                    <button onClick={() => alignSelected('left')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Left</button>
-                    <button onClick={() => alignSelected('center')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Center</button>
-                    <button onClick={() => alignSelected('right')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Right</button>
-                    <button onClick={() => alignSelected('top')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Top</button>
-                    <button onClick={() => alignSelected('middle')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Middle</button>
-                    <button onClick={() => alignSelected('bottom')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300">Bottom</button>
+                    <button
+                      onClick={() => alignSelected("left")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300"
+                    >
+                      Left
+                    </button>
+                    <button
+                      onClick={() => alignSelected("center")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300"
+                    >
+                      Center
+                    </button>
+                    <button
+                      onClick={() => alignSelected("right")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300"
+                    >
+                      Right
+                    </button>
+                    <button
+                      onClick={() => alignSelected("top")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300"
+                    >
+                      Top
+                    </button>
+                    <button
+                      onClick={() => alignSelected("middle")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300"
+                    >
+                      Middle
+                    </button>
+                    <button
+                      onClick={() => alignSelected("bottom")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300"
+                    >
+                      Bottom
+                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-1">
-                    <button onClick={() => alignSelected('distribute-h')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300 text-[10px]">Space Horiz</button>
-                    <button onClick={() => alignSelected('distribute-v')} className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300 text-[10px]">Space Vert</button>
+                    <button
+                      onClick={() => alignSelected("distribute-h")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300 text-[10px]"
+                    >
+                      Space Horiz
+                    </button>
+                    <button
+                      onClick={() => alignSelected("distribute-v")}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-slate-300 text-[10px]"
+                    >
+                      Space Vert
+                    </button>
                   </div>
                 </div>
 
@@ -846,19 +1177,34 @@ export const Sidebar: React.FC = () => {
                         <span className="truncate capitalize">{label}</span>
                       </div>
 
-                      <div className="flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex items-center space-x-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <button
-                          onClick={() => updateElement(el.id, { visible: !el.visible })}
+                          onClick={() =>
+                            updateElement(el.id, { visible: !el.visible })
+                          }
                           className="p-1 hover:bg-slate-800 rounded text-slate-400"
                         >
-                          {el.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-slate-600" />}
+                          {el.visible ? (
+                            <Eye className="w-3.5 h-3.5" />
+                          ) : (
+                            <EyeOff className="w-3.5 h-3.5 text-slate-600" />
+                          )}
                         </button>
 
                         <button
-                          onClick={() => updateElement(el.id, { locked: !el.locked })}
+                          onClick={() =>
+                            updateElement(el.id, { locked: !el.locked })
+                          }
                           className="p-1 hover:bg-slate-800 rounded text-slate-400"
                         >
-                          {el.locked ? <Lock className="w-3.5 h-3.5 text-amber-400" /> : <Unlock className="w-3.5 h-3.5" />}
+                          {el.locked ? (
+                            <Lock className="w-3.5 h-3.5 text-amber-400" />
+                          ) : (
+                            <Unlock className="w-3.5 h-3.5" />
+                          )}
                         </button>
 
                         <button

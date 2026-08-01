@@ -9,7 +9,6 @@ import {
   ArrowDown,
   Lock,
   Unlock,
-  Edit3,
 } from "lucide-react";
 
 interface ContextMenuProps {
@@ -56,14 +55,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, onClose }) => {
 
   const anyUnlocked = elements.some(
     (e) => selectedIds.includes(e.id) && !e.locked,
-  );
-  const hasText = elements.some(
-    (e) =>
-      selectedIds.includes(e.id) &&
-      (e.type === "text" ||
-        e.shapeType === "rectangle" ||
-        e.shapeType === "circle" ||
-        e.type === "shape"),
   );
 
   const MenuItem = ({

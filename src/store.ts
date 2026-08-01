@@ -66,6 +66,9 @@ interface StoreState {
   gridSize: number;
   saveStatus: "idle" | "saving" | "saved";
   theme: "dark" | "light";
+  favoriteShapes: string[];
+  isHelpPanelOpen: boolean;
+  toastMessage: string | null;
 
   // Derived
   elements: Element[];
@@ -85,7 +88,17 @@ interface StoreState {
   setHelpPanelOpen: (isOpen: boolean) => void;
   toggleFavoriteShape: (label: string) => void;
   nudgeSelected: (dx: number, dy: number) => void;
-  alignSelected: (alignment: 'left'|'center'|'right'|'top'|'middle'|'bottom'|'distribute-h'|'distribute-v') => void;
+  alignSelected: (
+    alignment:
+      | "left"
+      | "center"
+      | "right"
+      | "top"
+      | "middle"
+      | "bottom"
+      | "distribute-h"
+      | "distribute-v",
+  ) => void;
   duplicateElement: (id: string) => void;
   duplicateSelected: () => void;
 
@@ -153,15 +166,18 @@ export function createDefaultTextStyle(): TextStyle {
   try {
     const saved = localStorage.getItem("lastUsedTextStyle");
     if (saved) return { ...defaultStyle, ...JSON.parse(saved) };
-  } catch (e) {}
+  } catch {}
   return defaultStyle;
 }
 
 export function saveDefaultTextStyle(style: Partial<TextStyle>) {
   try {
     const current = createDefaultTextStyle();
-    localStorage.setItem("lastUsedTextStyle", JSON.stringify({ ...current, ...style }));
-  } catch (e) {}
+    localStorage.setItem(
+      "lastUsedTextStyle",
+      JSON.stringify({ ...current, ...style }),
+    );
+  } catch {}
 }
 
 /** Read the current theme's shape stroke color from CSS custom property */
@@ -176,7 +192,7 @@ function getThemeShapeStroke(): string {
 /**
  * Factory function to create a new canvas Element.
  * Reads the current CSS theme variables to pick an appropriate stroke color.
- * 
+ *
  * @param type The base element type (e.g. "shape", "text").
  * @param shapeType The specific shape type (if applicable).
  * @param x Initial X position.
@@ -211,7 +227,10 @@ export function createDefaultElement(
     roughness: 1,
     opacity: 1,
     cornerRadius: 0,
-    textStyle: type === "text" || type === "shape" ? createDefaultTextStyle() : undefined,
+    textStyle:
+      type === "text" || type === "shape"
+        ? createDefaultTextStyle()
+        : undefined,
   };
 }
 
@@ -240,7 +259,13 @@ export const useStore = create<StoreState>((set, get) => ({
   sidebarTab: "library",
   toastMessage: null,
   isHelpPanelOpen: false,
-  favoriteShapes: (() => { try { return JSON.parse(localStorage.getItem("favoriteShapes") || "[]"); } catch { return []; } })(),
+  favoriteShapes: (() => {
+    try {
+      return JSON.parse(localStorage.getItem("favoriteShapes") || "[]");
+    } catch {
+      return [];
+    }
+  })(),
   showGrid: true,
   snapToGrid: false,
   gridSize: 20,
@@ -249,13 +274,20 @@ export const useStore = create<StoreState>((set, get) => ({
 
   elements: [],
 
-  setTool: (tool) => set({ tool, selectedShapeType: tool === "select" ? null : get().selectedShapeType }),
+  setTool: (tool) =>
+    set({
+      tool,
+      selectedShapeType: tool === "select" ? null : get().selectedShapeType,
+    }),
 
   setSelectedShapeType: (shape) => set({ selectedShapeType: shape }),
 
   addElement: (el) => {
     const state = get();
-    const newElements = [...state.history.present, { ...el, zIndex: state.history.present.length }];
+    const newElements = [
+      ...state.history.present,
+      { ...el, zIndex: state.history.present.length },
+    ];
     set({
       history: pushHistory(state.history, newElements),
       elements: newElements,
@@ -266,7 +298,10 @@ export const useStore = create<StoreState>((set, get) => ({
   addElements: (els) => {
     const state = get();
     const baseZ = state.history.present.length;
-    const newElements = [...state.history.present, ...els.map((e, i) => ({ ...e, zIndex: baseZ + i }))];
+    const newElements = [
+      ...state.history.present,
+      ...els.map((e, i) => ({ ...e, zIndex: baseZ + i })),
+    ];
     set({
       history: pushHistory(state.history, newElements),
       elements: newElements,
@@ -276,7 +311,9 @@ export const useStore = create<StoreState>((set, get) => ({
 
   updateElement: (id, patch) => {
     const state = get();
-    const newElements = state.history.present.map((e) => (e.id === id ? { ...e, ...patch } : e));
+    const newElements = state.history.present.map((e) =>
+      e.id === id ? { ...e, ...patch } : e,
+    );
     set({
       history: pushHistory(state.history, newElements),
       elements: newElements,
@@ -309,31 +346,33 @@ export const useStore = create<StoreState>((set, get) => ({
     });
   },
 
-  
   nudgeSelected: (dx, dy) => {
     const state = get();
     if (state.selectedIds.length === 0) return;
     const idSet = new Set(state.selectedIds);
-    const newElements = state.history.present.map(e => 
-      idSet.has(e.id) ? { ...e, x: e.x + dx, y: e.y + dy } : e
+    const newElements = state.history.present.map((e) =>
+      idSet.has(e.id) ? { ...e, x: e.x + dx, y: e.y + dy } : e,
     );
     set({
       history: pushHistory(state.history, newElements),
       elements: newElements,
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     });
   },
 
   alignSelected: (alignment) => {
     const state = get();
     if (state.selectedIds.length < 2) return;
-    
+
     const idSet = new Set(state.selectedIds);
-    const selected = state.history.present.filter(e => idSet.has(e.id));
+    const selected = state.history.present.filter((e) => idSet.has(e.id));
     if (selected.length < 2) return;
 
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    selected.forEach(e => {
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    selected.forEach((e) => {
       if (e.x < minX) minX = e.x;
       if (e.y < minY) minY = e.y;
       if (e.x + e.width > maxX) maxX = e.x + e.width;
@@ -343,40 +382,52 @@ export const useStore = create<StoreState>((set, get) => ({
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
-    const newElements = state.history.present.map(e => {
+    const newElements = state.history.present.map((e) => {
       if (!idSet.has(e.id)) return e;
       const patch = { ...e };
       switch (alignment) {
-        case 'left': patch.x = minX; break;
-        case 'center': patch.x = centerX - e.width / 2; break;
-        case 'right': patch.x = maxX - e.width; break;
-        case 'top': patch.y = minY; break;
-        case 'middle': patch.y = centerY - e.height / 2; break;
-        case 'bottom': patch.y = maxY - e.height; break;
+        case "left":
+          patch.x = minX;
+          break;
+        case "center":
+          patch.x = centerX - e.width / 2;
+          break;
+        case "right":
+          patch.x = maxX - e.width;
+          break;
+        case "top":
+          patch.y = minY;
+          break;
+        case "middle":
+          patch.y = centerY - e.height / 2;
+          break;
+        case "bottom":
+          patch.y = maxY - e.height;
+          break;
       }
       return patch;
     });
 
     // Handle distribution separately because it needs sorting
-    if (alignment === 'distribute-h') {
+    if (alignment === "distribute-h") {
       const sorted = [...selected].sort((a, b) => a.x - b.x);
       const totalWidth = sorted.reduce((sum, e) => sum + e.width, 0);
-      const availableSpace = (maxX - minX) - totalWidth;
+      const availableSpace = maxX - minX - totalWidth;
       const gap = availableSpace / (sorted.length - 1);
       let currentX = minX;
-      sorted.forEach(e => {
-        const index = newElements.findIndex(ne => ne.id === e.id);
+      sorted.forEach((e) => {
+        const index = newElements.findIndex((ne) => ne.id === e.id);
         if (index !== -1) newElements[index].x = currentX;
         currentX += e.width + gap;
       });
-    } else if (alignment === 'distribute-v') {
+    } else if (alignment === "distribute-v") {
       const sorted = [...selected].sort((a, b) => a.y - b.y);
       const totalHeight = sorted.reduce((sum, e) => sum + e.height, 0);
-      const availableSpace = (maxY - minY) - totalHeight;
+      const availableSpace = maxY - minY - totalHeight;
       const gap = availableSpace / (sorted.length - 1);
       let currentY = minY;
-      sorted.forEach(e => {
-        const index = newElements.findIndex(ne => ne.id === e.id);
+      sorted.forEach((e) => {
+        const index = newElements.findIndex((ne) => ne.id === e.id);
         if (index !== -1) newElements[index].y = currentY;
         currentY += e.height + gap;
       });
@@ -385,23 +436,21 @@ export const useStore = create<StoreState>((set, get) => ({
     set({
       history: pushHistory(state.history, newElements),
       elements: newElements,
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     });
   },
 
   setHelpPanelOpen: (isOpen) => set({ isHelpPanelOpen: isOpen }),
-  toggleFavoriteShape: (label) => {
-    const state = get();
-    let nextFavs;
-    if (state.favoriteShapes.includes(label)) {
-      nextFavs = state.favoriteShapes.filter(l => l !== label);
-    } else {
-      nextFavs = [...state.favoriteShapes, label];
-    }
-    try {
-      localStorage.setItem("favoriteShapes", JSON.stringify(nextFavs));
-    } catch(e) {}
-    set({ favoriteShapes: nextFavs });
+  toggleFavoriteShape: (label: string) => {
+    set((state) => {
+      const newFavs = state.favoriteShapes.includes(label)
+        ? state.favoriteShapes.filter((l: string) => l !== label)
+        : [...state.favoriteShapes, label];
+      try {
+        localStorage.setItem("favoriteShapes", JSON.stringify(newFavs));
+      } catch (e) {}
+      return { favoriteShapes: newFavs };
+    });
   },
 
   showToast: (message) => {
@@ -415,18 +464,20 @@ export const useStore = create<StoreState>((set, get) => ({
     if (state.selectedIds.length === 0) return;
     const idSet = new Set(state.selectedIds);
     // Find if at least one is unlocked to determine whether we are locking or unlocking everything
-    const anyUnlocked = state.history.present.some(e => idSet.has(e.id) && !e.locked);
-    
-    const newElements = state.history.present.map(e => 
-      idSet.has(e.id) ? { ...e, locked: anyUnlocked } : e
+    const anyUnlocked = state.history.present.some(
+      (e) => idSet.has(e.id) && !e.locked,
+    );
+
+    const newElements = state.history.present.map((e) =>
+      idSet.has(e.id) ? { ...e, locked: anyUnlocked } : e,
     );
     set({
       history: pushHistory(state.history, newElements),
       elements: newElements,
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     });
   },
-deleteSelected: () => {
+  deleteSelected: () => {
     const { selectedIds } = get();
     if (selectedIds.length > 0) get().deleteElements(selectedIds);
   },
@@ -510,7 +561,11 @@ deleteSelected: () => {
     if (idx < 0 || idx >= els.length - 1) return;
     [els[idx], els[idx + 1]] = [els[idx + 1], els[idx]];
     const newElements = els.map((e, i) => ({ ...e, zIndex: i }));
-    set({ history: pushHistory(state.history, newElements), elements: newElements, updatedAt: Date.now() });
+    set({
+      history: pushHistory(state.history, newElements),
+      elements: newElements,
+      updatedAt: Date.now(),
+    });
   },
 
   sendBackward: (id) => {
@@ -520,7 +575,11 @@ deleteSelected: () => {
     if (idx <= 0) return;
     [els[idx], els[idx - 1]] = [els[idx - 1], els[idx]];
     const newElements = els.map((e, i) => ({ ...e, zIndex: i }));
-    set({ history: pushHistory(state.history, newElements), elements: newElements, updatedAt: Date.now() });
+    set({
+      history: pushHistory(state.history, newElements),
+      elements: newElements,
+      updatedAt: Date.now(),
+    });
   },
 
   bringToFront: (id) => {
@@ -531,7 +590,11 @@ deleteSelected: () => {
     const [el] = els.splice(idx, 1);
     els.push(el);
     const newElements = els.map((e, i) => ({ ...e, zIndex: i }));
-    set({ history: pushHistory(state.history, newElements), elements: newElements, updatedAt: Date.now() });
+    set({
+      history: pushHistory(state.history, newElements),
+      elements: newElements,
+      updatedAt: Date.now(),
+    });
   },
 
   sendToBack: (id) => {
@@ -542,7 +605,11 @@ deleteSelected: () => {
     const [el] = els.splice(idx, 1);
     els.unshift(el);
     const newElements = els.map((e, i) => ({ ...e, zIndex: i }));
-    set({ history: pushHistory(state.history, newElements), elements: newElements, updatedAt: Date.now() });
+    set({
+      history: pushHistory(state.history, newElements),
+      elements: newElements,
+      updatedAt: Date.now(),
+    });
   },
 
   setZoom: (zoom) => set({ zoom: Math.max(0.1, Math.min(5, zoom)) }),
@@ -561,13 +628,23 @@ deleteSelected: () => {
   undo: () => {
     const state = get();
     const newHistory = undoHistory(state.history);
-    set({ history: newHistory, elements: newHistory.present, selectedIds: [], updatedAt: Date.now() });
+    set({
+      history: newHistory,
+      elements: newHistory.present,
+      selectedIds: [],
+      updatedAt: Date.now(),
+    });
   },
 
   redo: () => {
     const state = get();
     const newHistory = redoHistory(state.history);
-    set({ history: newHistory, elements: newHistory.present, selectedIds: [], updatedAt: Date.now() });
+    set({
+      history: newHistory,
+      elements: newHistory.present,
+      selectedIds: [],
+      updatedAt: Date.now(),
+    });
   },
 
   canUndo: () => get().history.past.length > 0,
@@ -670,6 +747,10 @@ deleteSelected: () => {
 }));
 
 // Export snap helper for components
-export function snapValue(v: number, enabled: boolean, size: number = 20): number {
+export function snapValue(
+  v: number,
+  enabled: boolean,
+  size: number = 20,
+): number {
   return snap(v, size, enabled);
 }
