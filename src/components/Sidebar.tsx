@@ -324,7 +324,77 @@ export const Sidebar: React.FC = () => {
                   </div>
                 </div>
 
+                
+                {/* ── Connector Settings ── */}
+                {selectedElement.type === "connector" && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Routing Mode</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, routingMode: 'straight' } })}
+                          className={`py-1.5 rounded ${selectedElement.connector?.routingMode === 'straight' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                        >
+                          Straight
+                        </button>
+                        <button
+                          onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, routingMode: 'curved' } })}
+                          className={`py-1.5 rounded ${selectedElement.connector?.routingMode === 'curved' ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                        >
+                          Curved
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Start Marker</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {['none', 'arrow', 'circle'].map(m => (
+                          <button
+                            key={m}
+                            onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, startMarker: m as any } })}
+                            className={`py-1.5 rounded capitalize ${selectedElement.connector?.startMarker === m ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">End Marker</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {['none', 'arrow', 'circle'].map(m => (
+                          <button
+                            key={m}
+                            onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, endMarker: m as any } })}
+                            className={`py-1.5 rounded capitalize ${selectedElement.connector?.endMarker === m ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Line Style</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {['solid', 'dashed', 'dotted'].map(s => (
+                          <button
+                            key={s}
+                            onClick={() => updateElement(selectedElement.id, { connector: { ...selectedElement.connector!, strokeStyle: s as any } })}
+                            className={`py-1.5 rounded capitalize ${(selectedElement.connector?.strokeStyle || 'solid') === s ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-300'}`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Geometry */}
+                {selectedElement.type !== "connector" && (
                 <div className="space-y-2">
                   <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Transform</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -367,7 +437,10 @@ export const Sidebar: React.FC = () => {
                   </div>
                 </div>
 
+                )}
+
                 {/* Fill Color */}
+                {selectedElement.type !== "connector" && (
                 <div className="space-y-2">
                   <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Fill Color</label>
                   <div className="flex flex-wrap gap-1.5">
@@ -391,6 +464,8 @@ export const Sidebar: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                )}
 
                 {/* Stroke Color & Width */}
                 <div className="space-y-2">

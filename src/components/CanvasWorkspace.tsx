@@ -16,6 +16,7 @@ import {
   TextElementRenderer,
 } from "../ShapeRenderer";
 import { getShapeMeta } from "../shapeLibrary";
+import { getConnectionPoints, distance, Point } from "../utils/geometry";
 
 export interface CanvasWorkspaceRef {
   getStage: () => Konva.Stage | null;
@@ -108,6 +109,9 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
 
     // ── Connector drawing ─────────────────────────────────────────────
     const [connectorSource, setConnectorSource] = useState<string | null>(null);
+    const [hoveredConnectionPoint, setHoveredConnectionPoint] = useState<{ elementId: string, point: Point } | null>(null);
+    const [connectorSourcePoint, setConnectorSourcePoint] = useState<{ elementId: string, point: Point } | null>(null);
+    const [connectorLiveEnd, setConnectorLiveEnd] = useState<{ x: number, y: number } | null>(null);
 
     // ── Inline text editing ────────────────────────────────────────────
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -192,6 +196,8 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
           clearSelection();
           setTool("select");
           setConnectorSource(null);
+          setConnectorSourcePoint(null);
+          setConnectorLiveEnd(null);
           setIsCreating(false);
           setCreatePreview(null);
           setIsRubberBand(false);
@@ -320,40 +326,12 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
 
       // ── Connector tool ───────────────────────────────────────────────
       if (tool === "connector") {
-        if (!isStageTarget) {
-          const clickedId = findElementNode(e.target);
-          if (!connectorSource) {
-            if (clickedId) setConnectorSource(clickedId);
-          } else {
-            // Complete the connector
-            const srcEl = elements.find((el) => el.id === connectorSource);
-            const tgtEl = elements.find((el) => el.id === clickedId);
-            const raw = getWorldPos();
-            const p1: [number, number] = srcEl
-              ? [srcEl.x + srcEl.width / 2, srcEl.y + srcEl.height / 2]
-              : [raw.x, raw.y];
-            const p2: [number, number] = tgtEl
-              ? [tgtEl.x + tgtEl.width / 2, tgtEl.y + tgtEl.height / 2]
-              : [raw.x, raw.y];
-
-            const connEl = createDefaultElement(
-              "connector",
-              undefined,
-              0,
-              0,
-              1,
-              1
-            );
-            connEl.points = [p1, p2];
-            connEl.sourceId = connectorSource;
-            connEl.targetId = clickedId ?? undefined;
-            addElement(connEl);
-            setConnectorSource(null);
-            setTool("select");
-          }
+        if (hoveredConnectionPoint) {
+          setConnectorSourcePoint(hoveredConnectionPoint);
+          setConnectorLiveEnd({ x: hoveredConnectionPoint.point.x, y: hoveredConnectionPoint.point.y });
         } else {
-          // Clicked empty canvas — cancel
-          setConnectorSource(null);
+          setConnectorSourcePoint(null);
+          setConnectorLiveEnd(null);
         }
         return;
       }
@@ -454,6 +432,27 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
 
     // ── Mouse Up ──────────────────────────────────────────────────────
     const handleMouseUp = () => {
+      // Complete connector
+      if (tool === "connector" && connectorSourcePoint) {
+        if (hoveredConnectionPoint && hoveredConnectionPoint.elementId !== connectorSourcePoint.elementId) {
+          const connEl = createDefaultElement("connector", undefined, 0, 0, 1, 1);
+          connEl.connector = {
+            sourceId: connectorSourcePoint.elementId,
+            targetId: hoveredConnectionPoint.elementId,
+            sourceConnectionPoint: connectorSourcePoint.point.side,
+            targetConnectionPoint: hoveredConnectionPoint.point.side,
+            routingMode: "straight",
+            strokeStyle: "solid",
+            startMarker: "none",
+            endMarker: "arrow"
+          };
+          addElement(connEl);
+          setTool("select");
+        }
+        setConnectorSourcePoint(null);
+        setConnectorLiveEnd(null);
+        return;
+      }
       // End pan
       if (isPanning) {
         setIsPanning(false);
@@ -835,9 +834,54 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
         )}
 
         {/* ── Connector instruction banner ─────────────────────────── */}
-        {connectorSource && (
+        {/* Connector Overlays */}
+        {tool === "connector" && (
+          <svg className="absolute inset-0 pointer-events-none z-40" width="100%" height="100%">
+            {connectorSourcePoint && connectorLiveEnd && (
+              <line
+                x1={connectorSourcePoint.point.x * zoom + panX}
+                y1={connectorSourcePoint.point.y * zoom + panY}
+                x2={connectorLiveEnd.x * zoom + panX}
+                y2={connectorLiveEnd.y * zoom + panY}
+                stroke="#6366f1"
+                strokeWidth={2 * zoom}
+                strokeDasharray="5,5"
+              />
+            )}
+            
+            {elements
+              .filter(el => el.type === "shape" || el.type === "text")
+              .flatMap(el => getConnectionPoints(el).map(pt => ({ el, pt })))
+              .map(({ el, pt }, idx) => {
+                const isHovered = hoveredConnectionPoint?.elementId === el.id && hoveredConnectionPoint?.point.side === pt.side;
+                // Only show dots for hovered elements or the active source dot
+                const isActiveSrc = connectorSourcePoint?.elementId === el.id && connectorSourcePoint?.point.side === pt.side;
+                
+                // Show if we are hovered over the element (any point) or it's the active source
+                const isHoveredElement = hoveredConnectionPoint?.elementId === el.id;
+                
+                if (tool === "connector" && (isHoveredElement || isActiveSrc)) {
+                   return (
+                    <circle
+                      key={`cp-${el.id}-${idx}`}
+                      cx={pt.x * zoom + panX}
+                      cy={pt.y * zoom + panY}
+                      r={(isHovered ? 6 : 3) * zoom}
+                      fill="#ef4444"
+                      stroke="#ffffff"
+                      strokeWidth={1.5 * zoom}
+                      style={{ transition: 'r 0.1s ease' }}
+                    />
+                  );
+                }
+                return null;
+              })}
+          </svg>
+        )}
+
+        {tool === "connector" && !connectorSourcePoint && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg z-40 pointer-events-none animate-pulse">
-            Click a target shape to draw connector · Esc to cancel
+            Click a red connection point to start drawing
           </div>
         )}
 

@@ -25,6 +25,7 @@ import {
   getCachedDrawable
 } from "./utils/roughHelper";
 import { useStore } from "./store";
+import { getConnectionPoints, getCurvedPath } from "./utils/geometry";
 
 // ─── Helper: Get points for polygon shapes ─────────────────────────
 function diamondPoints(w: number, h: number): number[] {
@@ -1097,53 +1098,92 @@ export const ConnectorRenderer: React.FC<ConnectorRendererProps> = ({
   onClick,
 }) => {
   const theme = useStore((s) => s.theme);
+  const elements = useStore((s) => s.elements);
   const displayStroke = theme === "dark" && (element.stroke === "#1e293b" || !element.stroke) ? "#ced4da" : (element.stroke || "#1e293b");
-  if (!element.points || element.points.length < 2) return null;
 
-  if (element.roughness && element.roughness > 0) {
-    return (
-      <KonvaShape
-        sceneFunc={(ctx) => {
-          const d = getCachedDrawable(element, () => getRoughPolygonDrawable(element.points!, element.roughness!, false, undefined));
-          if (d) drawDrawable(ctx, d);
-        }}
-        stroke={displayStroke}
-        strokeWidth={element.strokeWidth || 2}
-        opacity={element.opacity ?? 1}
-        dash={element.dash}
-        id={element.id}
-        ref={(node: Konva.Node | null) => onRef?.(node)}
-        onClick={onClick}
-        hitStrokeWidth={12}
-      />
-    );
+  let p1 = { x: 0, y: 0, side: 0 };
+  let p2 = { x: 0, y: 0, side: 0 };
+  
+  if (element.connector) {
+    const srcEl = elements.find(e => e.id === element.connector?.sourceId);
+    const tgtEl = elements.find(e => e.id === element.connector?.targetId);
+    
+    if (srcEl) {
+      const srcPts = getConnectionPoints(srcEl);
+      const side = element.connector.sourceConnectionPoint ?? 0;
+      p1 = srcPts[side] || srcPts[0];
+    }
+    
+    if (tgtEl) {
+      const tgtPts = getConnectionPoints(tgtEl);
+      const side = element.connector.targetConnectionPoint ?? 0;
+      p2 = tgtPts[side] || tgtPts[0];
+    } else if (element.points && element.points.length >= 2) {
+      // Fallback for live drawing where target doesn't exist yet
+      p2 = { x: element.points[1][0], y: element.points[1][1], side: 0 };
+    }
+  } else if (element.points && element.points.length >= 2) {
+    p1 = { x: element.points[0][0], y: element.points[0][1], side: 0 };
+    p2 = { x: element.points[1][0], y: element.points[1][1], side: 0 };
+  } else {
+    return null;
   }
 
-  // Flatten absolute coords [[x1,y1],[x2,y2]] -> [x1,y1,x2,y2]
-  const flatPoints = element.points.flatMap((p) => p);
+  const isCurved = element.connector?.routingMode === "curved";
+  const dashArray = element.connector?.strokeStyle === "dashed" ? [8, 8] : element.connector?.strokeStyle === "dotted" ? [2, 4] : undefined;
+
+  // Arrow markers
+  const startMarker = element.connector?.startMarker;
+  const endMarker = element.connector?.endMarker;
+  
   return (
-    <Arrow
-      x={0}
-      y={0}
-      points={flatPoints}
-      stroke={displayStroke}
-      strokeWidth={element.strokeWidth || 2}
-      fill={element.stroke || "#1e293b"}
-      pointerLength={10}
-      pointerWidth={10}
-      lineCap="round"
-      lineJoin="round"
-      tension={0.3}
-      opacity={element.opacity ?? 1}
-      dash={element.dash}
-      id={element.id}
-      ref={(node: Konva.Node | null) => onRef?.(node)}
-      onClick={onClick}
-      hitStrokeWidth={12}
-    />
+    <Group ref={(node: Konva.Group | null) => onRef?.(node)} onClick={onClick} id={element.id}>
+      {isCurved ? (
+        <Path
+          data={getCurvedPath(p1, p2)}
+          stroke={displayStroke}
+          strokeWidth={element.strokeWidth || 2}
+          dash={dashArray || element.dash}
+          opacity={element.opacity ?? 1}
+          hitStrokeWidth={12}
+          fill="transparent"
+        />
+      ) : (
+        <Arrow
+          points={[p1.x, p1.y, p2.x, p2.y]}
+          stroke={displayStroke}
+          strokeWidth={element.strokeWidth || 2}
+          fill={displayStroke}
+          dash={dashArray || element.dash}
+          opacity={element.opacity ?? 1}
+          hitStrokeWidth={12}
+          pointerLength={endMarker === "arrow" ? 10 : 0}
+          pointerWidth={endMarker === "arrow" ? 10 : 0}
+          pointerAtBeginning={startMarker === "arrow"}
+          pointerAtEnding={endMarker === "arrow"}
+        />
+      )}
+      
+      {/* Markers fallback if not handled by Arrow */}
+      {isCurved && endMarker === "arrow" && (
+         <Arrow
+           points={[p2.x - 0.1, p2.y - 0.1, p2.x, p2.y]} // Hack for arrow on path
+           stroke={displayStroke}
+           strokeWidth={element.strokeWidth || 2}
+           fill={displayStroke}
+           pointerLength={10}
+           pointerWidth={10}
+         />
+      )}
+      {startMarker === "circle" && (
+        <Circle x={p1.x} y={p1.y} radius={4} fill={displayStroke} />
+      )}
+      {endMarker === "circle" && (
+        <Circle x={p2.x} y={p2.y} radius={4} fill={displayStroke} />
+      )}
+    </Group>
   );
 };
-
 // ─── Text element renderer ─────────────────────────────────────────
 // Group-based so it supports dragging and transforming like ShapeRenderer
 interface TextElementRendererProps {

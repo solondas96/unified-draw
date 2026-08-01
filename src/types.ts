@@ -135,12 +135,26 @@ export type ShapeType =
  * Styling properties specific to Text elements.
  */
 export interface TextStyle {
-  fontSize: number;
-  fontWeight: string; // "normal" | "bold"
-  fontStyle: string; // "normal" | "italic"
-  color: string;
-  alignment: "left" | "center" | "right";
   fontFamily: string;
+  fontSize: number;
+  fontWeight: "normal" | "bold";
+  fontStyle: "normal" | "italic";
+  color?: string;
+  alignment: "left" | "center" | "right" | "justify";
+}
+
+export type ConnectorRoutingMode = "straight" | "curved" | "orthogonal";
+export type ConnectorMarker = "none" | "arrow" | "circle";
+
+export interface ConnectorData {
+  sourceId?: string;
+  targetId?: string;
+  sourceConnectionPoint?: number;
+  targetConnectionPoint?: number;
+  routingMode: ConnectorRoutingMode;
+  startMarker?: ConnectorMarker;
+  endMarker?: ConnectorMarker;
+  strokeStyle?: "solid" | "dashed" | "dotted";
 }
 
 /**
@@ -161,8 +175,7 @@ export interface Element {
   stroke?: string;
   strokeWidth?: number;
   points?: Array<[number, number]>; // for freehand & connectors
-  sourceId?: string; // for connectors
-  targetId?: string; // for connectors
+  connector?: ConnectorData;
   zIndex: number;
   visible: boolean;
   locked: boolean;
