@@ -1,5 +1,5 @@
 import rough from "roughjs";
-import type { OpSet, Drawable } from "roughjs/bin/core";
+import type { Drawable } from "roughjs/bin/core";
 import { getStroke } from "perfect-freehand";
 import type Konva from "konva";
 
@@ -97,7 +97,7 @@ export function drawRoughLine(ctx: Konva.Context, x1: number, y1: number, x2: nu
 /**
  * Returns a drawn Rough.js Path.
  */
-export function drawRoughPath(ctx: Konva.Context, svgPath: string, w: number, h: number, roughness: number, fill?: string) {
+export function drawRoughPath(ctx: Konva.Context, svgPath: string, _w: number, _h: number, roughness: number, fill?: string) {
   const options: any = { roughness };
   if (fill && fill !== "transparent") {
     options.fill = fill;

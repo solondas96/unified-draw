@@ -20,7 +20,6 @@ import {
   drawRoughEllipse,
   drawRoughPolygon,
   drawRoughPath,
-  drawRoughLine,
   getFreehandSvgPath,
 } from "./utils/roughHelper";
 
@@ -656,7 +655,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
       if (element.roughness && element.roughness > 0) {
         return (
           <KonvaShape
-            sceneFunc={(ctx, shape) => {
+            sceneFunc={(ctx) => {
               drawRoughPath(ctx, pathString, width, height, element.roughness!, fill);
             }}
             {...commonProps}
@@ -676,7 +675,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         if (element.roughness && element.roughness > 0) {
           return (
             <KonvaShape
-              sceneFunc={(ctx, shape) => {
+              sceneFunc={(ctx) => {
                 drawRoughRectangle(ctx, width, height, element.roughness!, fill);
               }}
               {...commonProps}
@@ -699,7 +698,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         if (element.roughness && element.roughness > 0) {
           return (
             <KonvaShape
-              sceneFunc={(ctx, shape) => {
+              sceneFunc={(ctx) => {
                 drawRoughEllipse(ctx, r * 2, r * 2, element.roughness!, fill);
               }}
               {...commonProps}
@@ -720,7 +719,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         if (element.roughness && element.roughness > 0) {
           return (
             <KonvaShape
-              sceneFunc={(ctx, shape) => {
+              sceneFunc={(ctx) => {
                 drawRoughEllipse(ctx, width, height, element.roughness!, fill);
               }}
               {...commonProps}
@@ -742,7 +741,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         if (element.roughness && element.roughness > 0) {
           return (
             <KonvaShape
-              sceneFunc={(ctx, shape) => {
+              sceneFunc={(ctx) => {
                 drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
               }}
               {...commonProps}
@@ -763,7 +762,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         if (element.roughness && element.roughness > 0) {
           return (
             <KonvaShape
-              sceneFunc={(ctx, shape) => {
+              sceneFunc={(ctx) => {
                 drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]]], element.roughness!, true, fill);
               }}
               {...commonProps}
@@ -829,7 +828,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         if (element.roughness && element.roughness > 0) {
           return (
             <KonvaShape
-              sceneFunc={(ctx, shape) => {
+              sceneFunc={(ctx) => {
                 drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
               }}
               {...commonProps}
@@ -850,7 +849,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
         if (element.roughness && element.roughness > 0) {
           return (
             <KonvaShape
-              sceneFunc={(ctx, shape) => {
+              sceneFunc={(ctx) => {
                 drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
               }}
               {...commonProps}
@@ -1083,10 +1082,11 @@ export const ConnectorRenderer: React.FC<ConnectorRendererProps> = ({
   if (!element.points || element.points.length < 2) return null;
 
   if (element.roughness && element.roughness > 0) {
-    const roughPath = getRoughPolygon(element.points, element.roughness, false);
     return (
-      <Path
-        data={roughPath}
+      <KonvaShape
+        sceneFunc={(ctx) => {
+          drawRoughPolygon(ctx, element.points!, element.roughness!, false);
+        }}
         stroke={element.stroke || "#1e293b"}
         strokeWidth={element.strokeWidth || 2}
         opacity={element.opacity ?? 1}
