@@ -16,12 +16,12 @@ import type Konva from "konva";
 import type { Element, ShapeType } from "./types";
 import { getShapeMeta } from "./shapeLibrary";
 import {
-  getRoughRectangle,
-  getRoughEllipse,
-  getRoughPolygon,
-  getRoughPath,
+  drawRoughRectangle,
+  drawRoughEllipse,
+  drawRoughPolygon,
+  drawRoughPath,
+  drawRoughLine,
   getFreehandSvgPath,
-  getRoughLine,
 } from "./utils/roughHelper";
 
 // ─── Helper: Get points for polygon shapes ─────────────────────────
@@ -654,7 +654,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     if (pathFn) {
       const pathString = pathFn(width, height);
       if (element.roughness && element.roughness > 0) {
-        return <Path data={getRoughPath(pathString, width, height, element.roughness)} {...commonProps} />;
+        return (
+          <KonvaShape
+            sceneFunc={(ctx, shape) => {
+              drawRoughPath(ctx, pathString, width, height, element.roughness!, fill);
+            }}
+            {...commonProps}
+          />
+        );
       }
       return (
         <Path
@@ -667,7 +674,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     switch (shapeType) {
       case "rectangle":
         if (element.roughness && element.roughness > 0) {
-          return <Path data={getRoughRectangle(width, height, element.roughness)} {...commonProps} />;
+          return (
+            <KonvaShape
+              sceneFunc={(ctx, shape) => {
+                drawRoughRectangle(ctx, width, height, element.roughness!, fill);
+              }}
+              {...commonProps}
+            />
+          );
         }
         return (
           <Rect
@@ -683,7 +697,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
       case "circle": {
         const r = Math.min(width, height) / 2;
         if (element.roughness && element.roughness > 0) {
-          return <Path data={getRoughEllipse(r * 2, r * 2, element.roughness)} {...commonProps} />;
+          return (
+            <KonvaShape
+              sceneFunc={(ctx, shape) => {
+                drawRoughEllipse(ctx, r * 2, r * 2, element.roughness!, fill);
+              }}
+              {...commonProps}
+            />
+          );
         }
         return (
           <Circle
@@ -697,7 +718,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
 
       case "ellipse":
         if (element.roughness && element.roughness > 0) {
-          return <Path data={getRoughEllipse(width, height, element.roughness)} {...commonProps} />;
+          return (
+            <KonvaShape
+              sceneFunc={(ctx, shape) => {
+                drawRoughEllipse(ctx, width, height, element.roughness!, fill);
+              }}
+              {...commonProps}
+            />
+          );
         }
         return (
           <Ellipse
@@ -712,7 +740,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
       case "diamond": {
         const pts = diamondPoints(width, height);
         if (element.roughness && element.roughness > 0) {
-          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness, true)} {...commonProps} />;
+          return (
+            <KonvaShape
+              sceneFunc={(ctx, shape) => {
+                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
+              }}
+              {...commonProps}
+            />
+          );
         }
         return (
           <Line
@@ -726,7 +761,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
       case "triangle": {
         const pts = trianglePoints(width, height);
         if (element.roughness && element.roughness > 0) {
-          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]]], element.roughness, true)} {...commonProps} />;
+          return (
+            <KonvaShape
+              sceneFunc={(ctx, shape) => {
+                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]]], element.roughness!, true, fill);
+              }}
+              {...commonProps}
+            />
+          );
         }
         return (
           <Line
@@ -785,7 +827,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
       case "parallelogram": {
         const pts = parallelogramPoints(width, height);
         if (element.roughness && element.roughness > 0) {
-          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness, true)} {...commonProps} />;
+          return (
+            <KonvaShape
+              sceneFunc={(ctx, shape) => {
+                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
+              }}
+              {...commonProps}
+            />
+          );
         }
         return (
           <Line
@@ -799,7 +848,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
       case "trapezoid": {
         const pts = trapezoidPoints(width, height);
         if (element.roughness && element.roughness > 0) {
-          return <Path data={getRoughPolygon([[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness, true)} {...commonProps} />;
+          return (
+            <KonvaShape
+              sceneFunc={(ctx, shape) => {
+                drawRoughPolygon(ctx, [[pts[0], pts[1]], [pts[2], pts[3]], [pts[4], pts[5]], [pts[6], pts[7]]], element.roughness!, true, fill);
+              }}
+              {...commonProps}
+            />
+          );
         }
         return (
           <Line

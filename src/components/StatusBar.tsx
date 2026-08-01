@@ -31,10 +31,10 @@ export const StatusBar: React.FC = () => {
   return (
     <>
       <footer
-        className="h-7 text-[11px] px-4 flex items-center justify-between select-none z-30 font-mono"
+        className="absolute bottom-4 left-4 h-8 px-4 flex items-center justify-between select-none z-20 font-mono pointer-events-auto rounded-xl transition-all shadow-lg"
         style={{
-          background: "var(--surface-raised)",
-          borderTop: "1.5px solid var(--border-subtle)",
+          background: "var(--surface-base)",
+          border: "1.5px solid var(--border-subtle)",
           color: "var(--text-muted)",
         }}
       >

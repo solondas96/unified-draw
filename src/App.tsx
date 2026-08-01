@@ -63,26 +63,25 @@ export function App() {
 
   return (
     <div
-      className="w-screen h-screen flex flex-col overflow-hidden font-sans bg-dots"
+      className="w-screen h-screen overflow-hidden font-sans bg-dots relative"
       style={{
         background: "var(--canvas-bg)",
         color: "var(--text-primary)",
       }}
     >
-      {/* Top Navigation Toolbar */}
+      {/* Interactive Infinite Canvas Workspace (Absolute full screen) */}
+      <div className="absolute inset-0 z-0">
+        <CanvasWorkspace ref={workspaceRef} />
+      </div>
+
+      {/* Top Navigation Toolbar (Floating absolute) */}
       <Toolbar
         getStageRef={() => workspaceRef.current?.getStage() ?? null}
         onOpenCanvasModal={() => setIsSavedModalOpen(true)}
       />
 
-      {/* Main Studio Area */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Interactive Infinite Canvas Workspace */}
-        <CanvasWorkspace ref={workspaceRef} />
-
-        {/* Right Docked Sidebar */}
-        <Sidebar />
-      </div>
+      {/* Floating Properties Panel (Absolute right) */}
+      <Sidebar />
 
       {/* Bottom Status Bar */}
       <StatusBar />

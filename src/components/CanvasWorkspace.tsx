@@ -592,7 +592,7 @@ export const CanvasWorkspace = forwardRef<CanvasWorkspaceRef, {}>(
     return (
       <div
         ref={containerRef}
-        className="flex-1 relative overflow-hidden select-none"
+        className="w-full h-full relative overflow-hidden select-none"
         style={{ background: "var(--canvas-bg)", cursor: getCursor() }}
       >
         {/* ── CSS Dot Grid ─────────────────────────────────────────── */}

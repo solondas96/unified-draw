@@ -196,17 +196,19 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className="w-80 flex flex-col select-none z-20 shadow-xl"
+      className="absolute right-4 top-20 flex flex-col select-none z-20 pointer-events-auto rounded-xl transition-all"
       style={{
+        width: "300px",
+        maxHeight: "calc(100vh - 6rem)",
         background: "var(--surface-base)",
-        borderLeft: "1.5px solid var(--border-subtle)",
+        border: "1.5px solid var(--border-subtle)",
         color: "var(--text-primary)",
-        height: "calc(100vh - 3.5rem - 1.75rem)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
       }}
     >
       {/* Header Tabs */}
       <div
-        className="flex p-1"
+        className="flex p-1 rounded-t-xl"
         style={{
           background: "var(--surface-raised)",
           borderBottom: "1.5px solid var(--border-subtle)",

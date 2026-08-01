@@ -1,77 +1,115 @@
 import rough from "roughjs";
-import type { OpSet } from "roughjs/bin/core";
+import type { OpSet, Drawable } from "roughjs/bin/core";
 import { getStroke } from "perfect-freehand";
+import type Konva from "konva";
 
 // Initialize a singleton generator
 const generator = rough.generator();
 
 /**
- * Converts a Rough.js OpSet array into an SVG path string.
- * This allows us to use roughjs logic to draw onto a Konva <Path>.
+ * Draws a Rough.js Drawable directly onto a Konva Context.
+ * This is the magic that allows us to get sketchy fills and strokes
+ * while perfectly preserving Konva's hit-detection graph.
  */
-export function opsToPath(opSets: OpSet[]): string {
-  let path = "";
-  for (const set of opSets) {
+export function drawDrawable(ctx: Konva.Context, drawable: Drawable) {
+  for (const set of drawable.sets) {
+    ctx.beginPath();
     for (const { op, data } of set.ops) {
       switch (op) {
         case "move":
-          path += `M${data[0]} ${data[1]} `;
+          ctx.moveTo(data[0], data[1]);
           break;
         case "bcurveTo":
-          path += `C${data[0]} ${data[1]}, ${data[2]} ${data[3]}, ${data[4]} ${data[5]} `;
+          ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
           break;
         case "lineTo":
-          path += `L${data[0]} ${data[1]} `;
+          ctx.lineTo(data[0], data[1]);
           break;
       }
     }
+
+    if (set.type === "fillPath" || set.type === "fillSketch") {
+      ctx.fillStrokeShape(drawable as any); // Konva uses fillStrokeShape
+      // wait, we shouldn't use fillStrokeShape, we just need to use native-like fill/stroke
+      // if it's a fill sketch (the zig-zags), roughjs draws them as strokes!
+      // roughjs generates fillSketch as lines, so we must stroke them.
+      if (set.type === "fillPath") {
+        ctx.fill();
+      } else {
+        ctx.stroke();
+      }
+    } else {
+      ctx.stroke();
+    }
   }
-  return path.trim();
 }
 
 /**
- * Generates a rough rectangle SVG path.
+ * Returns a drawn Rough.js Rectangle.
  */
-export function getRoughRectangle(w: number, h: number, roughness: number = 1): string {
-  const d = generator.rectangle(0, 0, w, h, { roughness, fillStyle: "solid" });
-  return opsToPath(d.sets);
+export function drawRoughRectangle(ctx: Konva.Context, w: number, h: number, roughness: number, fill?: string) {
+  const options: any = { roughness };
+  if (fill && fill !== "transparent") {
+    options.fill = fill;
+    options.fillStyle = "hachure"; // typical excalidraw sketchy fill
+  }
+  const d = generator.rectangle(0, 0, w, h, options);
+  drawDrawable(ctx, d);
 }
 
 /**
- * Generates a rough circle/ellipse SVG path.
+ * Returns a drawn Rough.js Ellipse.
  */
-export function getRoughEllipse(w: number, h: number, roughness: number = 1): string {
-  const d = generator.ellipse(w / 2, h / 2, w, h, { roughness, fillStyle: "solid" });
-  return opsToPath(d.sets);
+export function drawRoughEllipse(ctx: Konva.Context, w: number, h: number, roughness: number, fill?: string) {
+  const options: any = { roughness };
+  if (fill && fill !== "transparent") {
+    options.fill = fill;
+    options.fillStyle = "hachure";
+  }
+  const d = generator.ellipse(w / 2, h / 2, w, h, options);
+  drawDrawable(ctx, d);
 }
 
 /**
- * Generates a rough line/polygon path from points.
+ * Returns a drawn Rough.js Polygon.
  */
-export function getRoughPolygon(points: [number, number][], roughness: number = 1, closed = false): string {
-  if (points.length < 2) return "";
+export function drawRoughPolygon(ctx: Konva.Context, points: [number, number][], roughness: number, closed = false, fill?: string) {
+  if (points.length < 2) return;
+  const options: any = { roughness };
+  if (fill && fill !== "transparent" && closed) {
+    options.fill = fill;
+    options.fillStyle = "hachure";
+  }
   const d = closed
-    ? generator.polygon(points, { roughness, fillStyle: "solid" })
-    : generator.linearPath(points, { roughness });
-  return opsToPath(d.sets);
+    ? generator.polygon(points, options)
+    : generator.linearPath(points, options);
+  drawDrawable(ctx, d);
 }
 
 /**
- * Generates a rough line segment.
+ * Returns a drawn Rough.js Line.
  */
-export function getRoughLine(x1: number, y1: number, x2: number, y2: number, roughness: number = 1): string {
+export function drawRoughLine(ctx: Konva.Context, x1: number, y1: number, x2: number, y2: number, roughness: number) {
   const d = generator.line(x1, y1, x2, y2, { roughness });
-  return opsToPath(d.sets);
+  drawDrawable(ctx, d);
 }
 
-// Fallback generator for passing existing string paths into roughjs
-export function getRoughPath(svgPath: string, w: number, h: number, roughness: number = 1): string {
-  const d = generator.path(svgPath, { roughness, fillStyle: "solid" });
-  return opsToPath(d.sets);
+/**
+ * Returns a drawn Rough.js Path.
+ */
+export function drawRoughPath(ctx: Konva.Context, svgPath: string, w: number, h: number, roughness: number, fill?: string) {
+  const options: any = { roughness };
+  if (fill && fill !== "transparent") {
+    options.fill = fill;
+    options.fillStyle = "hachure";
+  }
+  const d = generator.path(svgPath, options);
+  drawDrawable(ctx, d);
 }
 
 /**
  * Generates an SVG path string for a smooth variable-width freehand stroke
+
  * using perfect-freehand.
  */
 export function getFreehandSvgPath(
