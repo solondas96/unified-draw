@@ -1,5 +1,5 @@
 import rough from "roughjs";
-import { OpSet } from "roughjs/bin/core";
+import type { OpSet } from "roughjs/bin/core";
 import { getStroke } from "perfect-freehand";
 
 // Initialize a singleton generator
