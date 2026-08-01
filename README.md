@@ -7,15 +7,15 @@ A lightweight, blazing-fast, browser-based diagramming tool that combines the be
 ## ✨ Features
 
 - **Infinite Canvas Workspace**: Seamless zooming (up to 400%) and panning across an endless digital whiteboard.
-- **Rich Shape Library**: Over 500 pre-built shapes organized into intuitive categories (Basic, Arrows, Flowchart, Data Engineering, and more).
-- **Excalidraw-Inspired UX**: Fluid drag-and-drop shape creation, inline text editing, and immediate visual feedback.
-- **Smart Connectors**: Easily link shapes together with smart dynamic connecting lines.
+- **Rich Shape Library & Search**: Over 500 pre-built shapes. Search by name or category, and "Star" your favorite shapes to pin them to the top.
+- **Excalidraw-Inspired UX**: Fluid drag-and-drop shape creation directly from the sidebar to the canvas.
+- **Smart Connectors**: Easily link shapes together with smart dynamic connecting lines (Straight or Curved Bezier) that snap to 8-point bounding boxes.
+- **Context-Aware Floating Toolbar**: Select any element to instantly access quick actions (Font Size, Weight, Alignment, Colors, Copy/Paste) right above it.
 - **Beautiful Dark & Light Modes**: Eye-soothing, meticulously crafted design tokens for both light and dark environments with a smooth toggle animation.
-- **100% Local Privacy**: All your diagrams are saved locally in your browser using IndexedDB. No servers, no tracking, no data leaves your machine.
-- **Full History**: Robust Undo/Redo capability for peace of mind.
-- **Multi-Selection**: Rubber-band selection to move or modify multiple elements at once.
-- **Export & Import**: Export your masterpieces to high-res PNG, SVG, or JSON formats, and import existing JSON canvas files seamlessly.
-- **Extensive Keyboard Shortcuts**: Pro-level workflows designed for speed (press `V` for Select, `P` for Pencil, `H` for Pan, etc.).
+- **100% Local Privacy**: All your diagrams and persistent text preferences are saved locally using IndexedDB and localStorage. No servers, no tracking.
+- **Advanced Export Engine**: Export your masterpieces to high-res PNG, infinitely scalable SVG, or **Mermaid Flowchart Markdown**!
+- **Multi-Selection & Alignment**: Rubber-band selection to move, group, or align multiple elements at once.
+- **Extensive Keyboard Shortcuts**: Pro-level workflows designed for speed (press `V` for Select, `/` to search shapes, `Ctrl+L` to lock, etc.).
 
 ## 🛠️ Technology Stack
 
@@ -72,12 +72,18 @@ npm run preview
 | `A` | Arrow |
 | `T` | Text |
 | `X` | Connector |
+| `/` | Search Shape Library |
+| `Ctrl + S` | Save Diagram |
+| `Ctrl + L` | Lock / Unlock Selected |
 | `Ctrl + Z` | Undo |
 | `Ctrl + Y` | Redo |
 | `Ctrl + C` / `V` | Copy & Paste |
 | `Ctrl + D` | Duplicate selection |
+| `Ctrl + Shift + ↑` | Bring to Front |
+| `Ctrl + Shift + ↓` | Send to Back |
 | `Del` / `Backspace` | Delete selected elements |
 | `Double Click` | Edit shape/text inline |
+| `Right Click` | Context Menu |
 
 ## 🏗️ Project Structure
 
