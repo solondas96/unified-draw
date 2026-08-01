@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Google Font: Inter ──────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ─── Design Tokens: Dark Mode (default) ─────────────────────────── */
+:root,
+[data-theme="dark"] {
+  /* Canvas */
+  --canvas-bg:      #141820;
+  --grid-dot:       #2a3040;
+
+  /* Chrome surfaces */
+  --surface-base:   #1a1f2e;   /* toolbar / sidebar bg */
+  --surface-raised: #212736;   /* cards, inputs, menus */
+  --surface-hover:  #2a3040;   /* hover state */
+  --surface-active: #313954;   /* active/selected chip */
+  --border-subtle:  #2a3348;
+  --border-medium:  #36446a;
+
+  /* Typography */
+  --text-primary:   #e8edf6;
+  --text-secondary: #8e9bbf;
+  --text-muted:     #5a6a90;
+  --text-inverse:   #0f1520;
+
+  /* Accent (indigo) */
+  --accent:         #6366f1;
+  --accent-hover:   #4f52d8;
+  --accent-glow:    rgba(99, 102, 241, 0.35);
+  --accent-subtle:  rgba(99, 102, 241, 0.12);
+
+  /* Semantic */
+  --success:        #34d399;
+  --warning:        #fbbf24;
+  --error:          #f87171;
+
+  /* Shapes on canvas (default stroke / fill) */
+  --shape-stroke:   #a8b4d0;
+  --shape-fill:     #ffffff;
+  --shape-text:     #1a1f2e;
+
+  /* Scrollbar */
+  --scrollbar-thumb: #36446a;
+  --scrollbar-hover: #4a5a88;
+}
+
+/* ─── Design Tokens: Light Mode ──────────────────────────────────── */
+[data-theme="light"] {
+  /* Canvas */
+  --canvas-bg:      #f4f6fb;
+  --grid-dot:       #c8d0e0;
+
+  /* Chrome surfaces */
+  --surface-base:   #ffffff;
+  --surface-raised: #f0f3fa;
+  --surface-hover:  #e6ebf5;
+  --surface-active: #dde4f5;
+  --border-subtle:  #dde3ef;
+  --border-medium:  #c0ccdf;
+
+  /* Typography */
+  --text-primary:   #1a2240;
+  --text-secondary: #4a5878;
+  --text-muted:     #8898b8;
+  --text-inverse:   #f4f6fb;
+
+  /* Accent (violet) */
+  --accent:         #5b5fc7;
+  --accent-hover:   #4649b0;
+  --accent-glow:    rgba(91, 95, 199, 0.25);
+  --accent-subtle:  rgba(91, 95, 199, 0.10);
+
+  /* Semantic */
+  --success:        #059669;
+  --warning:        #d97706;
+  --error:          #dc2626;
+
+  /* Shapes on canvas */
+  --shape-stroke:   #374260;
+  --shape-fill:     #ffffff;
+  --shape-text:     #1a2240;
+
+  /* Scrollbar */
+  --scrollbar-thumb: #b8c4d8;
+  --scrollbar-hover: #8898b8;
+}
+
+/* ─── Base styles consuming tokens ──────────────────────────────────── */
+body {
+  background: var(--canvas-bg);
+  color: var(--text-primary);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ─── Theme-aware utility classes ────────────────────────────────── */
+.ud-surface     { background: var(--surface-base); }
+.ud-surface-r   { background: var(--surface-raised); }
+.ud-border      { border-color: var(--border-subtle); }
+.ud-border-m    { border-color: var(--border-medium); }
+.ud-text        { color: var(--text-primary); }
+.ud-text-2      { color: var(--text-secondary); }
+.ud-text-muted  { color: var(--text-muted); }
+
+/* ─── Theme transition ───────────────────────────────────────────── */
+.ud-surface,
+.ud-surface-r,
+header,
+aside,
+footer {
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* ─── Toggle Switch component ────────────────────────────────────── */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--surface-active);
+  border: 1.5px solid var(--border-medium);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.theme-toggle::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+
+[data-theme="light"] .theme-toggle::before {
+  transform: translateX(24px);
+  background: var(--accent);
+}
+
+[data-theme="dark"] .theme-toggle::before {
+  transform: translateX(0);
+  background: #a8b4d0;
+}
+
+/* ─── Hand-drawn font ────────────────────────────────────────────── */
+.font-hand {
+  font-family: 'Virgil', 'Segoe UI', cursive;
+}
+
+/* ─── Active tool highlight ──────────────────────────────────────── */
+.tool-btn-active {
+  background: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+/* ─── Shape stroke / fill defaults from theme ────────────────────── */
+/* These are read by JS via getComputedStyle on :root */
+
+/* ─── Subtle focus ring ──────────────────────────────────────────── */
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
