@@ -19,7 +19,7 @@
     "html2canvas": "^1.4.1",
     "idb": "^8.0.3",
     "konva": "^10.3.0",
-    "lucide-react": "^1.28.0",
+    "lucide-react": "^1.31.0",
     "perfect-freehand": "^1.2.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
